@@ -1,0 +1,9 @@
+[package]
+name = "spiral_galaxy"
+version = "0.1.0"
+authors = ["Your Name <your.email@example.com>"]
+edition = "2021"
+
+[dependencies]
+bevy = "0.11"
+rand = "0.8.4"
