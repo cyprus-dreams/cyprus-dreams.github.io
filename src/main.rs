@@ -1,75 +1,200 @@
-use bevy::prelude::*;
-use rand::Rng;
 
-const SCREEN_WIDTH: f32 = 800.0;
-const SCREEN_HEIGHT: f32 = 600.0;
-const STAR_SIZE: f32 = 2.0;
 
-struct Star;
+//! Illustrates bloom post-processing in 2d.
+
+use bevy::{
+    core_pipeline::{
+        bloom::{BloomCompositeMode, BloomSettings},
+        tonemapping::Tonemapping,
+    },
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 
 fn main() {
-    App::build()
-        .insert_resource(WindowDescriptor {
-            title: "Spiral Galaxy".to_string(),
-            width: SCREEN_WIDTH,
-            height: SCREEN_HEIGHT,
-            ..Default::default()
-        })
+    App::new()
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup.system())
-        .add_startup_system(generate_spiral_galaxy.system())
-        .add_system(handle_input.system())
+        .add_systems(Startup, setup)
+        .add_systems(Update, update_bloom_settings)
         .run();
 }
 
-fn setup(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+fn setup(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true, // 1. HDR is required for bloom
+                ..default()
+            },
+            tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
+            ..default()
+        },
+        BloomSettings::default(), // 3. Enable bloom for the camera
+    ));
+
+   
+
+    // Circle mesh
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes.add(Circle::new(100.)).into(),
+        // 4. Put something bright in a dark environment to see the effect
+        material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
+        transform: Transform::from_translation(Vec3::new(-200., 0., 0.)),
+        ..default()
+    });
+
+    // Hexagon mesh
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes.add(RegularPolygon::new(100., 6)).into(),
+        // 4. Put something bright in a dark environment to see the effect
+        material: materials.add(Color::rgb(6.25, 9.4, 9.1)),
+        transform: Transform::from_translation(Vec3::new(200., 0., 0.)),
+        ..default()
+    });
+
+    // UI
+    commands.spawn(
+        TextBundle::from_section(
+            "",
+            TextStyle {
+                font_size: 18.0,
+                color: Color::WHITE,
+                ..default()
+            },
+        )
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(10.0),
+            left: Val::Px(10.0),
+            ..default()
+        }),
+    );
 }
 
-fn generate_spiral_galaxy(mut commands: Commands, asset_server: Res<AssetServer>, mut materials: ResMut<Assets<ColorMaterial>>) {
-    let star_material = materials.add(ColorMaterial::color(Color::WHITE));
-    let mut rng = rand::thread_rng();
-    let arms = 4;
-    let arm_offset = std::f32::consts::PI * 2.0 / arms as f32;
+// ------------------------------------------------------------------------------------------------
 
-    for i in 0..1000 {
-        let arm = i % arms;
-        let theta = i as f32 * 0.1 + arm as f32 * arm_offset;
-        let radius = (i as f32 * 0.05).sqrt();
-        let x = SCREEN_WIDTH / 2.0 + theta.cos() * radius + rng.gen_range(-5.0..5.0);
-        let y = SCREEN_HEIGHT / 2.0 + theta.sin() * radius + rng.gen_range(-5.0..5.0);
-        
-        commands.spawn_bundle(SpriteBundle {
-            material: star_material.clone(),
-            transform: Transform::from_xyz(x - SCREEN_WIDTH / 2.0, y - SCREEN_HEIGHT / 2.0, 0.0),
-            sprite: Sprite::new(Vec2::new(STAR_SIZE, STAR_SIZE)),
-            ..Default::default()
-        })
-        .insert(Star);
-    }
-}
+fn update_bloom_settings(
+    mut camera: Query<(Entity, Option<&mut BloomSettings>), With<Camera>>,
+    mut text: Query<&mut Text>,
+    mut commands: Commands,
+    keycode: Res<ButtonInput<KeyCode>>,
+    time: Res<Time>,
+) {
+    let bloom_settings = camera.single_mut();
+    let mut text = text.single_mut();
+    let text = &mut text.sections[0].value;
 
-fn handle_input(mut commands: Commands, keyboard_input: Res<Input<KeyCode>>, asset_server: Res<AssetServer>, mut materials: ResMut<Assets<ColorMaterial>>) {
-    if keyboard_input.just_pressed(KeyCode::Q) {
-        let star_material = materials.add(ColorMaterial::color(Color::WHITE));
-        let mut rng = rand::thread_rng();
-        let arms = 4;
-        let arm_offset = std::f32::consts::PI * 2.0 / arms as f32;
+    match bloom_settings {
+        (entity, Some(mut bloom_settings)) => {
+            *text = "BloomSettings (Toggle: Space)\n".to_string();
+            text.push_str(&format!("(Q/A) Intensity: {}\n", bloom_settings.intensity));
+            text.push_str(&format!(
+                "(W/S) Low-frequency boost: {}\n",
+                bloom_settings.low_frequency_boost
+            ));
+            text.push_str(&format!(
+                "(E/D) Low-frequency boost curvature: {}\n",
+                bloom_settings.low_frequency_boost_curvature
+            ));
+            text.push_str(&format!(
+                "(R/F) High-pass frequency: {}\n",
+                bloom_settings.high_pass_frequency
+            ));
+            text.push_str(&format!(
+                "(T/G) Mode: {}\n",
+                match bloom_settings.composite_mode {
+                    BloomCompositeMode::EnergyConserving => "Energy-conserving",
+                    BloomCompositeMode::Additive => "Additive",
+                }
+            ));
+            text.push_str(&format!(
+                "(Y/H) Threshold: {}\n",
+                bloom_settings.prefilter_settings.threshold
+            ));
+            text.push_str(&format!(
+                "(U/J) Threshold softness: {}\n",
+                bloom_settings.prefilter_settings.threshold_softness
+            ));
 
-        for i in 0..1000 {
-            let arm = i % arms;
-            let theta = i as f32 * 0.1 + arm as f32 * arm_offset;
-            let radius = (i as f32 * 0.05).sqrt();
-            let x = SCREEN_WIDTH / 2.0 + theta.cos() * radius + rng.gen_range(-5.0..5.0);
-            let y = SCREEN_HEIGHT / 2.0 + theta.sin() * radius + rng.gen_range(-5.0..5.0);
+            if keycode.just_pressed(KeyCode::Space) {
+                commands.entity(entity).remove::<BloomSettings>();
+            }
 
-            commands.spawn_bundle(SpriteBundle {
-                material: star_material.clone(),
-                transform: Transform::from_xyz(x - SCREEN_WIDTH / 2.0, y - SCREEN_HEIGHT / 2.0, 0.0),
-                sprite: Sprite::new(Vec2::new(STAR_SIZE, STAR_SIZE)),
-                ..Default::default()
-            })
-            .insert(Star);
+            let dt = time.delta_seconds();
+
+            if keycode.pressed(KeyCode::KeyA) {
+                bloom_settings.intensity -= dt / 10.0;
+            }
+            if keycode.pressed(KeyCode::KeyQ) {
+                bloom_settings.intensity += dt / 10.0;
+            }
+            bloom_settings.intensity = bloom_settings.intensity.clamp(0.0, 1.0);
+
+            if keycode.pressed(KeyCode::KeyS) {
+                bloom_settings.low_frequency_boost -= dt / 10.0;
+            }
+            if keycode.pressed(KeyCode::KeyW) {
+                bloom_settings.low_frequency_boost += dt / 10.0;
+            }
+            bloom_settings.low_frequency_boost = bloom_settings.low_frequency_boost.clamp(0.0, 1.0);
+
+            if keycode.pressed(KeyCode::KeyD) {
+                bloom_settings.low_frequency_boost_curvature -= dt / 10.0;
+            }
+            if keycode.pressed(KeyCode::KeyE) {
+                bloom_settings.low_frequency_boost_curvature += dt / 10.0;
+            }
+            bloom_settings.low_frequency_boost_curvature =
+                bloom_settings.low_frequency_boost_curvature.clamp(0.0, 1.0);
+
+            if keycode.pressed(KeyCode::KeyF) {
+                bloom_settings.high_pass_frequency -= dt / 10.0;
+            }
+            if keycode.pressed(KeyCode::KeyR) {
+                bloom_settings.high_pass_frequency += dt / 10.0;
+            }
+            bloom_settings.high_pass_frequency = bloom_settings.high_pass_frequency.clamp(0.0, 1.0);
+
+            if keycode.pressed(KeyCode::KeyG) {
+                bloom_settings.composite_mode = BloomCompositeMode::Additive;
+            }
+            if keycode.pressed(KeyCode::KeyT) {
+                bloom_settings.composite_mode = BloomCompositeMode::EnergyConserving;
+            }
+
+            if keycode.pressed(KeyCode::KeyH) {
+                bloom_settings.prefilter_settings.threshold -= dt;
+            }
+            if keycode.pressed(KeyCode::KeyY) {
+                bloom_settings.prefilter_settings.threshold += dt;
+            }
+            bloom_settings.prefilter_settings.threshold =
+                bloom_settings.prefilter_settings.threshold.max(0.0);
+
+            if keycode.pressed(KeyCode::KeyJ) {
+                bloom_settings.prefilter_settings.threshold_softness -= dt / 10.0;
+            }
+            if keycode.pressed(KeyCode::KeyU) {
+                bloom_settings.prefilter_settings.threshold_softness += dt / 10.0;
+            }
+            bloom_settings.prefilter_settings.threshold_softness = bloom_settings
+                .prefilter_settings
+                .threshold_softness
+                .clamp(0.0, 1.0);
+        }
+
+        (entity, None) => {
+            *text = "Bloom: Off (Toggle: Space)".to_string();
+
+            if keycode.just_pressed(KeyCode::Space) {
+                commands.entity(entity).insert(BloomSettings::default());
+            }
         }
     }
 }
+
