@@ -31,7 +31,9 @@ fn main() {
         .add_plugins(EguiPlugin)
         .init_resource::<Masterik>()
         .init_resource::<BevyTerminal<RataguiBackend>>()
+        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
         .add_systems(Startup, setup)
+        .add_systems(PostStartup, spawn_all_stars)
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, ui_example_system)
         .run();
@@ -49,11 +51,23 @@ fn setup(
                 hdr: true, // 1. HDR is required for bloom
                 ..default()
             },
+            projection: OrthographicProjection { far: 1000.0,
+                near: -1000.0,  scale: 30.0, ..default() },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
             ..default()
         },
         BloomSettings::default(), // 3. Enable bloom for the camera
     ));
+
+ 
+}
+
+fn spawn_all_stars(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+) {
 
     for boop in 1..3000 {
         let angle = boop as f32 * 0.01;
@@ -84,7 +98,10 @@ fn setup(
             ..default()
         });
     }
+
+
 }
+
 
 #[derive(Resource)]
 struct Masterik {
@@ -174,6 +191,7 @@ fn ui_example_system(
     draw_info_menu(&mut termres.terminal_info, &mut masterok);
 
     egui::SidePanel::right("my_left_panel")
+    .frame(Frame::none())
         .min_width(300.0)
         .max_width(300.0)
         .show(contexts.ctx_mut(), |ui| {
@@ -189,10 +207,10 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Master
             //neccesary beccause drawing is from the top
 
             frame.render_widget(
-                Paragraph::new("ASDASDASDSSSS").on_gray().block(
+                Paragraph::new("Title").on_black().block(
                     Block::new()
-                        .title("press number to choose item to pick up")
-                        .blue()
+                        .title("Sirius-7")
+                        .white()
                         .borders(Borders::ALL),
                 ),
                 area,
@@ -211,7 +229,7 @@ struct BevyTerminal<RataguiBackend: ratatui::backend::Backend> {
 impl Default for BevyTerminal<RataguiBackend> {
     fn default() -> Self {
         let mut backend1 = RataguiBackend::new(20, 20);
-        backend1.set_font_size(20);
+        backend1.set_font_size(16);
         let mut terminal1 = Terminal::new(backend1).unwrap();
 
         BevyTerminal {
