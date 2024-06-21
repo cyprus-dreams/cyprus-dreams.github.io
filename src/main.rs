@@ -63,8 +63,8 @@ fn setup(
 
         // Create a small RNG and add randomness
     let mut rng = SmallRng::from_entropy();
-    let random_offset_x: f32 = rng.gen_range(-10.0..10.0);
-    let random_offset_y: f32 = rng.gen_range(-10.0..10.0);
+    let random_offset_x: f32 = rng.gen_range(-1000.0..1000.0);
+    let random_offset_y: f32 = rng.gen_range(-1000.0..1000.0);
 
     xik += random_offset_x;
     yik += random_offset_y;
@@ -91,6 +91,8 @@ struct Masterik {
     total_stars: i64,
     gen_seed: i64,
     spiral_arm_count: i64,
+    camera_move_speed: f32,
+   
 }
 
 impl Masterik {
@@ -103,6 +105,8 @@ impl Default for Masterik {
             total_stars: 10000,
             gen_seed: 1111111,
             spiral_arm_count: 2,
+            camera_move_speed:10.0
+           
         }
     }
 }
@@ -110,16 +114,40 @@ impl Default for Masterik {
 fn keyboard_input_system(
     input: Res<ButtonInput<KeyCode>>,
     mut masterok: ResMut<Masterik>,
-    mut query_camera: Query<&mut OrthographicProjection, With<Camera>>,
+    mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
 ) {
+    let  (mut projection,mut transform) = query_camera.single_mut();
+
+
     let char_up = input.any_pressed([KeyCode::KeyW]);
     let char_down = input.any_pressed([KeyCode::KeyS]);
     let char_left = input.any_pressed([KeyCode::KeyA]);
     let char_right = input.any_pressed([KeyCode::KeyD]);
+
+    if char_up {
+        transform.translation.y += (masterok.camera_move_speed * projection.scale);
+
+    }
+    if char_down {
+        transform.translation.y -= (masterok.camera_move_speed * projection.scale);
+
+    }
+    if char_left {
+        transform.translation.x -= (masterok.camera_move_speed * projection.scale);
+
+    }
+    if char_right {
+        transform.translation.x += (masterok.camera_move_speed * projection.scale);
+
+    }
+
+
+
+
     let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
     let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
 
-    let mut projection = query_camera.single_mut();
+   
 
     if char_q {
         // zoom out
