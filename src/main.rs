@@ -27,9 +27,12 @@ use egui_ratatui::RataguiBackend;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(EguiPlugin)
         .init_resource::<Masterik>()
+        .init_resource::<BevyTerminal<RataguiBackend>>()
         .add_systems(Startup, setup)
         .add_systems(Update, keyboard_input_system)
+        .add_systems(Update, ui_example_system)
        
         .run();
 }
@@ -135,4 +138,71 @@ fn keyboard_input_system(
         panic!("BYE");
     }
   
+}
+
+
+// Render to the terminal and to egui , both are immediate mode
+fn ui_example_system(
+    mut contexts: EguiContexts,
+    mut termres: ResMut<BevyTerminal<RataguiBackend>>,
+    mut masterok: ResMut<Masterik>,
+) {
+   
+  
+    draw_info_menu(&mut termres.terminal_info, &mut masterok);
+   
+
+    egui::SidePanel::right("my_left_panel").min_width(300.0)
+    .max_width(300.0).show(contexts.ctx_mut(), |ui| {
+       
+        ui.add(termres.terminal_info.backend_mut());
+     });
+
+
+
+}
+
+fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Masterik) {
+    terminal
+        .draw(|frame| {
+            let area = frame.size();
+
+            //neccesary beccause drawing is from the top
+
+            frame.render_widget(
+                Paragraph::new("ASDASDASDSSSS").on_gray().block(
+                    Block::new()
+                        .title("press number to choose item to pick up")
+                        .blue()
+                        .borders(Borders::ALL),
+                ),
+                area,
+            );
+        })
+        .expect("epic fail");
+}
+
+
+//create resource to hold the ratatui terminal
+#[derive(Resource)]
+struct BevyTerminal<RataguiBackend: ratatui::backend::Backend> {
+ 
+    terminal_info: Terminal<RataguiBackend>,
+  
+}
+
+// Implement default on the resource to initialize it
+impl Default for BevyTerminal<RataguiBackend> {
+    fn default() -> Self {
+        let mut backend1 = RataguiBackend::new(20, 20);
+        backend1.set_font_size(20);
+        let mut terminal1 = Terminal::new(backend1).unwrap();
+
+      
+        BevyTerminal {
+          
+            terminal_info: terminal1,
+        
+        }
+    }
 }
