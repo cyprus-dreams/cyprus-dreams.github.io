@@ -17,13 +17,13 @@ use egui::{FontData, FontDefinitions, FontFamily};
 use egui_ratatui::RataguiBackend;
 use ratatui::{
     layout::Rect,
-    prelude::{Line, Stylize, Terminal},
+    prelude::{Line, Span, Stylize, Terminal},
     text::Text,
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
 
-use rand::{Rng, SeedableRng};
 use rand::rngs::SmallRng;
+use rand::{Rng, SeedableRng};
 
 fn main() {
     App::new()
@@ -51,15 +51,17 @@ fn setup(
                 hdr: true, // 1. HDR is required for bloom
                 ..default()
             },
-            projection: OrthographicProjection { far: 1000.0,
-                near: -1000.0,  scale: 30.0, ..default() },
+            projection: OrthographicProjection {
+                far: 1000.0,
+                near: -1000.0,
+                scale: 30.0,
+                ..default()
+            },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
             ..default()
         },
         BloomSettings::default(), // 3. Enable bloom for the camera
     ));
-
- 
 }
 
 fn spawn_all_stars(
@@ -68,7 +70,6 @@ fn spawn_all_stars(
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
-
     for boop in 1..3000 {
         let angle = boop as f32 * 0.01;
         let radius = 40.0 * angle;
@@ -76,17 +77,16 @@ fn spawn_all_stars(
         let mut yik = radius * angle.sin() * 50.0;
 
         // Create a small RNG and add randomness
-    let mut rng = SmallRng::from_entropy();
-    let random_offset_x: f32 = rng.gen_range(-1000.0..1000.0);
-    let random_offset_y: f32 = rng.gen_range(-1000.0..1000.0);
+        let mut rng = SmallRng::from_entropy();
+        let random_offset_x: f32 = rng.gen_range(-1000.0..1000.0);
+        let random_offset_y: f32 = rng.gen_range(-1000.0..1000.0);
 
-    xik += random_offset_x;
-    yik += random_offset_y;
+        xik += random_offset_x;
+        yik += random_offset_y;
 
         if boop % 2 == 0 {
             xik = -xik;
             yik = -yik;
-
         }
 
         // Circle mesh
@@ -98,10 +98,7 @@ fn spawn_all_stars(
             ..default()
         });
     }
-
-
 }
-
 
 #[derive(Resource)]
 struct Masterik {
@@ -109,7 +106,6 @@ struct Masterik {
     gen_seed: i64,
     spiral_arm_count: i64,
     camera_move_speed: f32,
-   
 }
 
 impl Masterik {
@@ -122,8 +118,7 @@ impl Default for Masterik {
             total_stars: 10000,
             gen_seed: 1111111,
             spiral_arm_count: 2,
-            camera_move_speed:10.0
-           
+            camera_move_speed: 10.0,
         }
     }
 }
@@ -133,8 +128,7 @@ fn keyboard_input_system(
     mut masterok: ResMut<Masterik>,
     mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
 ) {
-    let  (mut projection,mut transform) = query_camera.single_mut();
-
+    let (mut projection, mut transform) = query_camera.single_mut();
 
     let char_up = input.any_pressed([KeyCode::KeyW]);
     let char_down = input.any_pressed([KeyCode::KeyS]);
@@ -143,28 +137,19 @@ fn keyboard_input_system(
 
     if char_up {
         transform.translation.y += (masterok.camera_move_speed * projection.scale);
-
     }
     if char_down {
         transform.translation.y -= (masterok.camera_move_speed * projection.scale);
-
     }
     if char_left {
         transform.translation.x -= (masterok.camera_move_speed * projection.scale);
-
     }
     if char_right {
         transform.translation.x += (masterok.camera_move_speed * projection.scale);
-
     }
-
-
-
 
     let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
     let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
-
-   
 
     if char_q {
         // zoom out
@@ -191,7 +176,7 @@ fn ui_example_system(
     draw_info_menu(&mut termres.terminal_info, &mut masterok);
 
     egui::SidePanel::right("my_left_panel")
-    .frame(Frame::none())
+        .frame(Frame::none())
         .min_width(300.0)
         .max_width(300.0)
         .show(contexts.ctx_mut(), |ui| {
@@ -204,15 +189,12 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Master
         .draw(|frame| {
             let area = frame.size();
 
-            //neccesary beccause drawing is from the top
+            let mut lines = (Text::from(vec![Line::from("Hello "), Line::from("World")]));
 
             frame.render_widget(
-                Paragraph::new("Title").on_black().block(
-                    Block::new()
-                        .title("Sirius-7")
-                        .white()
-                        .borders(Borders::ALL),
-                ),
+                Paragraph::new(lines)
+                    .on_black()
+                    .block(Block::new().title("Sirius-7").white().borders(Borders::ALL)),
                 area,
             );
         })
