@@ -22,6 +22,9 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
 
+use rand::{Rng, SeedableRng};
+use rand::rngs::SmallRng;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -52,9 +55,25 @@ fn setup(
         BloomSettings::default(), // 3. Enable bloom for the camera
     ));
 
-    for boop in 1..10000 {
-        let xik = (boop % 100) * 50; // x-coordinate
-        let yik = (boop / 100) * 50; // y-coordinate
+    for boop in 1..3000 {
+        let angle = boop as f32 * 0.01;
+        let radius = 40.0 * angle;
+        let mut xik = radius * angle.cos() * 50.0;
+        let mut yik = radius * angle.sin() * 50.0;
+
+        // Create a small RNG and add randomness
+    let mut rng = SmallRng::from_entropy();
+    let random_offset_x: f32 = rng.gen_range(-10.0..10.0);
+    let random_offset_y: f32 = rng.gen_range(-10.0..10.0);
+
+    xik += random_offset_x;
+    yik += random_offset_y;
+
+        if boop % 2 == 0 {
+            xik = -xik;
+            yik = -yik;
+
+        }
 
         // Circle mesh
         commands.spawn(MaterialMesh2dBundle {
