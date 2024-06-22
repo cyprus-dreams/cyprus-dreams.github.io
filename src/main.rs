@@ -79,6 +79,39 @@ fn keyboard_input_system(
     let char_left = input.any_pressed([KeyCode::KeyA]);
     let char_right = input.any_pressed([KeyCode::KeyD]);
 
+
+    let o_class = input.any_just_pressed([KeyCode::KeyZ]);
+    let b_class = input.any_just_pressed([KeyCode::KeyX]);
+    let a_class = input.any_just_pressed([KeyCode::KeyC]);
+    let f_class = input.any_just_pressed([KeyCode::KeyV]);
+    let g_class = input.any_just_pressed([KeyCode::KeyB]);
+    let k_class = input.any_just_pressed([KeyCode::KeyN]);
+    let m_class = input.any_just_pressed([KeyCode::KeyM]);
+
+    if o_class {
+        masterok.o_class = !masterok.o_class;
+    }
+    if b_class {
+        masterok.b_class = !masterok.b_class;
+    }
+    if a_class {
+        masterok.a_class = !masterok.a_class;
+    }
+    if f_class {
+        masterok.f_class = !masterok.f_class;
+    }
+    if g_class {
+        masterok.g_class = !masterok.g_class;
+    }
+    if k_class {
+        masterok.k_class = !masterok.k_class;
+    }
+    if m_class {
+        masterok.m_class = !masterok.m_class;
+    }
+
+
+
     if char_up {
         transform.translation.y += (masterok.camera_move_speed * projection.scale);
     }
