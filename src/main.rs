@@ -25,6 +25,9 @@ use ratatui::{
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
+mod resources;
+use resources::{BevyTerminal, Masterik};
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -62,65 +65,6 @@ fn setup(
         },
         BloomSettings::default(), // 3. Enable bloom for the camera
     ));
-}
-
-fn spawn_all_stars(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
-) {
-    for boop in 1..3000 {
-        let angle = boop as f32 * 0.002;
-        let radius = 90.0 * angle;
-        let mut xik = radius * angle.cos() * 200.0;
-        let mut yik = radius * angle.sin() * 200.0;
-
-        // Create a small RNG and add randomness
-        let mut rng = SmallRng::from_entropy();
-        let random_offset_x: f32 = rng.gen_range(-10000.0..5000.0);
-        let random_offset_y: f32 = rng.gen_range(-10000.0..5000.0);
-
-        xik += random_offset_x;
-        yik += random_offset_y;
-
-        if boop % 2 == 0 {
-            xik = -xik;
-            yik = -yik;
-        }
-
-        // Circle mesh
-        commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(100.)).into(),
-            // 4. Put something bright in a dark environment to see the effect
-            material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
-            transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
-            ..default()
-        });
-    }
-}
-
-#[derive(Resource)]
-struct Masterik {
-    total_stars: i64,
-    gen_seed: i64,
-    spiral_arm_count: i64,
-    camera_move_speed: f32,
-}
-
-impl Masterik {
-    pub fn refresh_menus(&mut self) {}
-}
-
-impl Default for Masterik {
-    fn default() -> Self {
-        Self {
-            total_stars: 10000,
-            gen_seed: 1111111,
-            spiral_arm_count: 2,
-            camera_move_speed: 10.0,
-        }
-    }
 }
 
 fn keyboard_input_system(
@@ -191,41 +135,67 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Master
 
             let mut lines = (Text::from(vec![
                 Line::from("FPS: TODO!! "),
-                Line::from("Stars: TODO!! "),
-                Line::from("Spiral Arms: TODO!!"),
-                Line::from("Current Seed: TODO!!"),
                 Line::from(" "),
                 Line::from("[WASD] - Move Camera "),
                 Line::from("[Q/E] - Zoom Out/In"),
-                Line::from("[T/G] - Add/Delete 1000 Stars"),
-                Line::from("[Y/H] - Add/Remove 10000 Stars"),
+                Line::from(" "),
+             
+                Line::from("Current Seed: TODO!!"),
+                Line::from("[T] - Change Seed"),
+                Line::from(" "),
+               
+                Line::from("Stars: TODO!! "),
+                Line::from("[U/J] - Add/Delete 1000 Stars"),
+                Line::from("[I/K] - Add/Remove 10000 Stars"),
+                Line::from(" "),
+           
+                Line::from("Spiral Arms: TODO!!"),
+                Line::from("[O/L] - Add/Remove Spiral Arm"),
+                Line::from(" "),
             ]));
 
             frame.render_widget(
                 Paragraph::new(lines)
                     .on_black()
-                    .block(Block::new().title("Sirius-7").white().borders(Borders::ALL)),
+                    .block(Block::new().title("Sirius-7").gray().borders(Borders::ALL)),
                 area,
             );
         })
         .expect("epic fail");
 }
 
-//create resource to hold the ratatui terminal
-#[derive(Resource)]
-struct BevyTerminal<RataguiBackend: ratatui::backend::Backend> {
-    terminal_info: Terminal<RataguiBackend>,
-}
+fn spawn_all_stars(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+) {
+    for boop in 1..3000 {
+        let angle = boop as f32 * 0.002;
+        let radius = 90.0 * angle;
+        let mut xik = radius * angle.cos() * 200.0;
+        let mut yik = radius * angle.sin() * 200.0;
 
-// Implement default on the resource to initialize it
-impl Default for BevyTerminal<RataguiBackend> {
-    fn default() -> Self {
-        let mut backend1 = RataguiBackend::new(20, 20);
-        backend1.set_font_size(16);
-        let mut terminal1 = Terminal::new(backend1).unwrap();
+        // Create a small RNG and add randomness
+        let mut rng = SmallRng::from_entropy();
+        let random_offset_x: f32 = rng.gen_range(-10000.0..5000.0);
+        let random_offset_y: f32 = rng.gen_range(-10000.0..5000.0);
 
-        BevyTerminal {
-            terminal_info: terminal1,
+        xik += random_offset_x;
+        yik += random_offset_y;
+
+        if boop % 2 == 0 {
+            xik = -xik;
+            yik = -yik;
         }
+
+        // Circle mesh
+        commands.spawn(MaterialMesh2dBundle {
+            mesh: meshes.add(Circle::new(100.)).into(),
+            // 4. Put something bright in a dark environment to see the effect
+            material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
+            transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
+            ..default()
+        });
     }
 }
