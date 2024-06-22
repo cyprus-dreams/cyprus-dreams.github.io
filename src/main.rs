@@ -170,6 +170,9 @@ fn spawn_all_stars(
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
 ) {
+    let circle_radius: f32 = 100.0;
+    let mut positions = Vec::new();
+
     for boop in 1..3000 {
         let angle = boop as f32 * 0.002;
         let radius = 90.0 * angle;
@@ -189,9 +192,24 @@ fn spawn_all_stars(
             yik = -yik;
         }
 
+        // Ensure the new circle does not overlap with any existing circles
+        let mut attempts = 0;
+        while positions.iter().any(|&(px, py)| {
+            let dx = xik - px;
+            let dy = yik - py;
+            (((dx * dx) + (dy * dy)) as f64).sqrt() < (2.0 * circle_radius) as f64
+        }) && attempts < 100
+        {
+            xik += rng.gen_range(-circle_radius..circle_radius);
+            yik += rng.gen_range(-circle_radius..circle_radius);
+            attempts += 1;
+        }
+
+        // Store the new circle position
+        positions.push((xik, yik));
         // Circle mesh
         commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(100.)).into(),
+            mesh: meshes.add(Circle::new(circle_radius)).into(),
             // 4. Put something bright in a dark environment to see the effect
             material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
             transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
