@@ -34,7 +34,7 @@ fn main() {
         .add_plugins(EguiPlugin)
         .init_resource::<Masterik>()
         .init_resource::<BevyTerminal<RataguiBackend>>()
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
+        .insert_resource(ClearColor(Color::rgb(0.05, 0.05, 0.05)))
         .add_systems(Startup, setup)
         .add_systems(PostStartup, spawn_all_stars)
         .add_systems(Update, keyboard_input_system)
@@ -119,10 +119,13 @@ fn ui_example_system(
 ) {
     draw_info_menu(&mut termres.terminal_info, &mut masterok);
 
+    let mut frame = egui::Frame::default().inner_margin(1.0);
+    frame.fill = egui::Color32::BLACK;
+
     egui::SidePanel::right("my_left_panel")
-        .frame(Frame::none())
-        .min_width(320.0)
-        .max_width(320.0)
+        .frame(frame)
+        .min_width(330.0)
+        .max_width(330.0)
         .show(contexts.ctx_mut(), |ui| {
             ui.add(termres.terminal_info.backend_mut());
         });
@@ -181,8 +184,8 @@ fn spawn_all_stars(
 
         // Create a small RNG and add randomness
         let mut rng = SmallRng::from_entropy();
-        let random_offset_x: f32 = rng.gen_range(-10000.0..5000.0);
-        let random_offset_y: f32 = rng.gen_range(-10000.0..5000.0);
+        let random_offset_x: f32 = rng.gen_range(-20000.0..20000.0);
+        let random_offset_y: f32 = rng.gen_range(-20000.0..20000.0);
 
         xik += random_offset_x;
         yik += random_offset_y;

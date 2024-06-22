@@ -45,6 +45,13 @@ pub struct Masterik {
     pub gen_seed: i64,
     pub spiral_arm_count: i64,
     pub camera_move_speed: f32,
+    pub o_class: bool,
+    pub b_class: bool,
+    pub a_class: bool,
+    pub f_class: bool,
+    pub g_class: bool,
+    pub k_class: bool,
+    pub m_class: bool,
 }
 
 impl Masterik {
@@ -58,6 +65,13 @@ impl Default for Masterik {
             gen_seed: 1111111,
             spiral_arm_count: 2,
             camera_move_speed: 10.0,
+             o_class: true,
+     b_class: true,
+     a_class: true,
+     f_class: true,
+     g_class: true,
+     k_class: true,
+     m_class: true,
         }
     }
 }
