@@ -54,7 +54,7 @@ fn setup(
             projection: OrthographicProjection {
                 far: 1000.0,
                 near: -1000.0,
-                scale: 30.0,
+                scale: 350.0,
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
@@ -71,15 +71,15 @@ fn spawn_all_stars(
     asset_server: Res<AssetServer>,
 ) {
     for boop in 1..3000 {
-        let angle = boop as f32 * 0.01;
-        let radius = 40.0 * angle;
-        let mut xik = radius * angle.cos() * 50.0;
-        let mut yik = radius * angle.sin() * 50.0;
+        let angle = boop as f32 * 0.002;
+        let radius = 90.0 * angle;
+        let mut xik = radius * angle.cos() * 200.0;
+        let mut yik = radius * angle.sin() * 200.0;
 
         // Create a small RNG and add randomness
         let mut rng = SmallRng::from_entropy();
-        let random_offset_x: f32 = rng.gen_range(-1000.0..1000.0);
-        let random_offset_y: f32 = rng.gen_range(-1000.0..1000.0);
+        let random_offset_x: f32 = rng.gen_range(-10000.0..5000.0);
+        let random_offset_y: f32 = rng.gen_range(-10000.0..5000.0);
 
         xik += random_offset_x;
         yik += random_offset_y;
@@ -91,7 +91,7 @@ fn spawn_all_stars(
 
         // Circle mesh
         commands.spawn(MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(5.)).into(),
+            mesh: meshes.add(Circle::new(100.)).into(),
             // 4. Put something bright in a dark environment to see the effect
             material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
             transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
@@ -177,8 +177,8 @@ fn ui_example_system(
 
     egui::SidePanel::right("my_left_panel")
         .frame(Frame::none())
-        .min_width(300.0)
-        .max_width(300.0)
+        .min_width(320.0)
+        .max_width(320.0)
         .show(contexts.ctx_mut(), |ui| {
             ui.add(termres.terminal_info.backend_mut());
         });
@@ -189,7 +189,17 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Master
         .draw(|frame| {
             let area = frame.size();
 
-            let mut lines = (Text::from(vec![Line::from("Hello "), Line::from("World")]));
+            let mut lines = (Text::from(vec![
+                Line::from("FPS: TODO!! "),
+                Line::from("Stars: TODO!! "),
+                Line::from("Spiral Arms: TODO!!"),
+                Line::from("Current Seed: TODO!!"),
+                Line::from(" "),
+                Line::from("[WASD] - Move Camera "),
+                Line::from("[Q/E] - Zoom Out/In"),
+                Line::from("[T/G] - Add/Delete 1000 Stars"),
+                Line::from("[Y/H] - Add/Remove 10000 Stars"),
+            ]));
 
             frame.render_widget(
                 Paragraph::new(lines)
