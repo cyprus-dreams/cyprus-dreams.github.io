@@ -30,7 +30,7 @@ pub struct BevyTerminal<RataguiBackend: ratatui::backend::Backend> {
 impl Default for BevyTerminal<RataguiBackend> {
     fn default() -> Self {
         let mut backend1 = RataguiBackend::new(20, 20);
-        backend1.set_font_size(16);
+        backend1.set_font_size(14);
         let mut terminal1 = Terminal::new(backend1).unwrap();
 
         BevyTerminal {

@@ -17,7 +17,7 @@ use egui::{FontData, FontDefinitions, FontFamily};
 use egui_ratatui::RataguiBackend;
 use ratatui::{
     layout::Rect,
-    prelude::{Line, Span, Stylize, Terminal},
+    prelude::{Line, Span, Stylize, Terminal,Modifier},
     text::Text,
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
@@ -119,13 +119,13 @@ fn ui_example_system(
 ) {
     draw_info_menu(&mut termres.terminal_info, &mut masterok);
 
-    let mut frame = egui::Frame::default().inner_margin(1.0);
-    frame.fill = egui::Color32::BLACK;
+    let mut frame = egui::Frame::default().inner_margin(1.0).outer_margin(1.0).fill(egui::Color32::BLACK);
+ 
 
     egui::SidePanel::right("my_left_panel")
         .frame(frame)
-        .min_width(330.0)
-        .max_width(330.0)
+        .min_width(322.0)
+        .max_width(322.0)
         .show(contexts.ctx_mut(), |ui| {
             ui.add(termres.terminal_info.backend_mut());
         });
@@ -155,6 +155,15 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Master
                 Line::from("Spiral Arms: TODO!!"),
                 Line::from("[O/L] - Add/Remove Spiral Arm"),
                 Line::from(" "),
+                Line::from("Toggle Star Types in Galaxy"),
+                Line::from(" "),
+                Line::from("[Z] - O-Class (Blue Giant)").style( if masterok.o_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[X] - B-Class (Blue-White)").style( if masterok.b_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[C] - A-Class (White)").style( if masterok.a_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[V] - F-Class (Yellow-White Dwarf)").style( if masterok.f_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[B] - G-Class (Sun)").style( if masterok.g_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[N] - K-Class (Orange Dwarf)").style( if masterok.k_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[M] - M-Class (Red Dwarf)").style( if masterok.m_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
             ]));
 
             frame.render_widget(
