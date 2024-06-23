@@ -8,7 +8,7 @@ use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
 };
-
+use bevy::ecs::system::RunSystemOnce;
 use bevy_egui::{
     egui::{self, Frame},
     EguiContexts, EguiPlugin,
@@ -29,7 +29,7 @@ use rand::{Rng, SeedableRng};
 
 mod resources;
 use resources::{
-    BevyTerminal, Masterik, PositionsVec, SpawnStars, StarCount, StarData, StarsAdded, StarsRemoved,
+    BevyTerminal, Masterik, PositionsVec, SpawnStars, StarCount, StarData, StarsAdded, StarsRemoved, ChangeSeed, RespawnStars,
 };
 
 fn main() {
@@ -41,19 +41,22 @@ fn main() {
         .init_resource::<BevyTerminal<RataguiBackend>>()
         .insert_resource(ClearColor(Color::rgb(0.05, 0.05, 0.05)))
         .add_systems(Startup, setup)
-        .add_systems(PostStartup, spawn_initial_stars)
+        .add_systems(PreUpdate, spawn_initial_stars)
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, ui_example_system)
         .add_systems(Update, star_watcher)
         .add_systems(Update, star_adder)
         .add_systems(Update, star_remover)
+        .add_systems(Update, despawn_all_stars)
         .add_event::<SpawnStars>()
         .add_event::<StarsAdded>()
         .add_event::<StarsRemoved>()
+        .add_event::<ChangeSeed>()
+        .add_event::<RespawnStars>()
         .run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands,mut ev_respawn: EventWriter<RespawnStars>,) {
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
@@ -71,6 +74,7 @@ fn setup(mut commands: Commands) {
         },
         BloomSettings::default(), // 3. Enable bloom for the camera
     ));
+    ev_respawn.send(RespawnStars);
 }
 
 fn keyboard_input_system(
@@ -78,6 +82,8 @@ fn keyboard_input_system(
     mut masterok: ResMut<Masterik>,
     mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
     mut ev_spawn_stars: EventWriter<SpawnStars>,
+    mut ev_change_seed: EventWriter<ChangeSeed>,
+   
 ) {
     let (mut projection, mut transform) = query_camera.single_mut();
 
@@ -101,6 +107,14 @@ fn keyboard_input_system(
     let remove_1000 = input.any_just_pressed([KeyCode::KeyJ]);
     let add_10000 = input.any_just_pressed([KeyCode::KeyI]);
     let remove_10000 = input.any_just_pressed([KeyCode::KeyK]);
+
+    let change_seed = input.any_just_pressed([KeyCode::KeyT]);
+
+    if change_seed {
+        *masterok = Masterik::default();
+        ev_change_seed.send(ChangeSeed);
+
+    }
 
     if add_1000 {
         ev_spawn_stars.send(SpawnStars(1000));
@@ -330,40 +344,44 @@ fn spawn_initial_stars(
     asset_server: Res<AssetServer>,
     mut masterok: ResMut<Masterik>,
     star_data: Res<StarData>,
+    mut ev_respawn: EventReader<RespawnStars>,
 ) {
-    generate_star_positions_in_range(1, masterok.total_stars.clone(), &mut masterok, &star_data);
 
-    let mut initial_counter = 0;
-    for (x, y, radius) in &masterok.positions {
-        initial_counter += 1;
+    for resp in ev_respawn.read() {  generate_star_positions_in_range(1, masterok.total_stars.clone(), &mut masterok, &star_data);
 
-        let radius = radius.clone();
+        let mut initial_counter = 0;
+        for (x, y, radius) in &masterok.positions {
+            initial_counter += 1;
+    
+            let radius = radius.clone();
+    
+            let star_color = if radius > 500.0 {
+                Color::rgb_u8(159, 162, 222)
+            } else if radius > 200.0 {
+                Color::rgb_u8(240, 240, 254)
+            } else if radius > 140.0 {
+                Color::rgb_u8(248, 254, 252)
+            } else if radius > 99.0 {
+                Color::rgb_u8(247, 254, 144)
+            } else if radius > 45.0 {
+                Color::rgb_u8(254, 170, 52)
+            } else {
+                Color::rgb_u8(254, 70, 70)
+            };
+    
+            commands.spawn((
+                MaterialMesh2dBundle {
+                    mesh: meshes.add(Circle::new(radius.clone())).into(),
+                    // 4. Put something bright in a dark environment to see the effect
+                    material: materials.add(star_color),
+                    transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+                    ..default()
+                },
+                StarCount(initial_counter),
+            ));
+        }}
 
-        let star_color = if radius > 500.0 {
-            Color::rgb_u8(159, 162, 222)
-        } else if radius > 200.0 {
-            Color::rgb_u8(240, 240, 254)
-        } else if radius > 140.0 {
-            Color::rgb_u8(248, 254, 252)
-        } else if radius > 99.0 {
-            Color::rgb_u8(247, 254, 144)
-        } else if radius > 45.0 {
-            Color::rgb_u8(254, 170, 52)
-        } else {
-            Color::rgb_u8(254, 70, 70)
-        };
-
-        commands.spawn((
-            MaterialMesh2dBundle {
-                mesh: meshes.add(Circle::new(radius.clone())).into(),
-                // 4. Put something bright in a dark environment to see the effect
-                material: materials.add(star_color),
-                transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
-                ..default()
-            },
-            StarCount(initial_counter),
-        ));
-    }
+  
 }
 
 fn star_watcher(
@@ -454,6 +472,7 @@ fn star_remover(
     mut masterok: ResMut<Masterik>,
     star_data: Res<StarData>,
     mut ev_stars_remove: EventReader<StarsRemoved>,
+    
     mut commands: Commands,
     query: Query<(Entity, &StarCount)>,
 ) {
@@ -468,4 +487,23 @@ fn star_remover(
             }
         }
     }
+}
+
+
+fn despawn_all_stars(
+    mut ev_change_seed: EventReader<ChangeSeed>,
+    mut ev_respawn: EventWriter<RespawnStars>,
+  
+    mut commands: Commands,
+    query: Query<(Entity, &StarCount)>,
+) {
+    for ev in ev_change_seed.read() { for (entity, sc) in query.iter() {
+            
+        commands.entity(entity).despawn();
+        ev_respawn.send(RespawnStars);
+    
+}}
+
+       
+    
 }

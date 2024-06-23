@@ -138,6 +138,13 @@ pub struct StarsRemoved(pub i64); //contains the previous amount of stars
 #[derive(Event)]
 pub struct StarsAdded(pub i64); //contains the previous amount of stars
 
+
+#[derive(Event)]
+pub struct ChangeSeed; //contains the previous amount of stars
+
+#[derive(Event)]
+pub struct RespawnStars; //contains the previous amount of stars
+
 #[derive(Component)]
 pub struct StarCount(pub i64);
 
