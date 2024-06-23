@@ -40,6 +40,7 @@ fn main() {
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, ui_example_system)
         .add_systems(Update, star_watcher)
+        .add_systems(Update, star_adder)
         .add_event::<SpawnStars>()
         .add_event::<StarsAdded>()
         .add_event::<StarsRemoved>()
@@ -334,5 +335,19 @@ fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMu
                 ev_stars_add.send(StarsAdded(previous_value));
             }
         }
+    }
+}
+
+
+fn star_adder( mut masterok: ResMut<Masterik>,  mut ev_stars_add: EventReader<StarsAdded>) {
+    //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
+
+    for ev in ev_stars_add.read() {
+        let previous_value = ev.0;
+
+        let new_value = (masterok.total_stars );
+
+
+      
     }
 }

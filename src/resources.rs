@@ -80,9 +80,9 @@ impl Default for Masterik {
 pub struct SpawnStars(pub i64);
 
 #[derive(Event)]
-pub struct StarsRemoved(pub i64);
+pub struct StarsRemoved(pub i64); //contains the previous amount of stars
 #[derive(Event)]
-pub struct StarsAdded(pub i64);
+pub struct StarsAdded(pub i64);//contains the previous amount of stars
 
 #[derive(Component)]
 pub struct StarCount(pub i64);
