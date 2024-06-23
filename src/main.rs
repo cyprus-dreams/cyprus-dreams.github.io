@@ -41,7 +41,7 @@ fn main() {
         .init_resource::<BevyTerminal<RataguiBackend>>()
         .insert_resource(ClearColor(Color::rgb(0.05, 0.05, 0.05)))
         .add_systems(Startup, setup)
-        .add_systems(PreUpdate, spawn_initial_stars)
+        .add_systems(PostUpdate, spawn_initial_stars)
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, ui_example_system)
         .add_systems(Update, star_watcher)
@@ -500,9 +500,10 @@ fn despawn_all_stars(
     for ev in ev_change_seed.read() { for (entity, sc) in query.iter() {
             
         commands.entity(entity).despawn();
-        ev_respawn.send(RespawnStars);
+       
     
-}}
+}
+ev_respawn.send(RespawnStars);}
 
        
     
