@@ -108,13 +108,9 @@ fn keyboard_input_system(
     let add_10000 = input.any_just_pressed([KeyCode::KeyI]);
     let remove_10000 = input.any_just_pressed([KeyCode::KeyK]);
 
-    let change_seed = input.any_just_pressed([KeyCode::KeyT]);
+    let mut change_seed = input.any_just_pressed([KeyCode::KeyT]);
 
-    if change_seed {
-        masterok.partial_reset();
-        ev_change_seed.send(ChangeSeed);
-
-    }
+  
 
     if add_1000 {
         ev_spawn_stars.send(SpawnStars(1000));
@@ -130,24 +126,31 @@ fn keyboard_input_system(
 
     if o_class {
         masterok.o_class = !masterok.o_class;
+        change_seed = true;
     }
     if b_class {
         masterok.b_class = !masterok.b_class;
+        change_seed = true;
     }
     if a_class {
         masterok.a_class = !masterok.a_class;
+        change_seed = true;
     }
     if f_class {
         masterok.f_class = !masterok.f_class;
+        change_seed = true;
     }
     if g_class {
         masterok.g_class = !masterok.g_class;
+        change_seed = true;
     }
     if k_class {
         masterok.k_class = !masterok.k_class;
+        change_seed = true;
     }
     if m_class {
         masterok.m_class = !masterok.m_class;
+        change_seed = true;
     }
 
     if char_up {
@@ -170,6 +173,12 @@ fn keyboard_input_system(
     if char_e {
         // zoom in
         projection.scale /= 1.25;
+    }
+
+    if change_seed {
+        masterok.partial_reset();
+        ev_change_seed.send(ChangeSeed);
+
     }
 
     let char_backspace = input.any_pressed([KeyCode::Backspace, KeyCode::Delete]);
