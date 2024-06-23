@@ -103,12 +103,22 @@ fn keyboard_input_system(
     let k_class = input.any_just_pressed([KeyCode::KeyN]);
     let m_class = input.any_just_pressed([KeyCode::KeyM]);
 
+    let add_arm = input.any_just_pressed([KeyCode::KeyO]);
+    let delete_arm = input.any_just_pressed([KeyCode::KeyL]);
+
+    
+
     let add_1000 = input.any_just_pressed([KeyCode::KeyU]);
     let remove_1000 = input.any_just_pressed([KeyCode::KeyJ]);
     let add_10000 = input.any_just_pressed([KeyCode::KeyI]);
     let remove_10000 = input.any_just_pressed([KeyCode::KeyK]);
 
     let mut change_seed = input.any_just_pressed([KeyCode::KeyT]);
+
+    if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
+        change_seed=true;}
+    else    if delete_arm && (masterok.spiral_arm_count >1) {masterok.spiral_arm_count-=1;
+            change_seed=true;}
 
     if add_1000 {
         ev_spawn_stars.send(SpawnStars(1000));
@@ -227,7 +237,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) 
                 Line::from("[U/J] - Add/Delete 1000 Stars"),
                 Line::from("[I/K] - Add/Remove 10000 Stars"),
                 Line::from(" "),
-                Line::from("Spiral Arms: TODO!!"),
+                Line::from(format!("Spiral Arms: {} ", masterok.spiral_arm_count)),
                 Line::from("[O/L] - Add/Remove Spiral Arm"),
                 Line::from(" "),
                 Line::from("Toggle Star Types in Galaxy"),
@@ -286,8 +296,10 @@ fn generate_star_positions_in_range(
     star_data: &StarData,
 ) {
     for boop in start..end {
-        let random_angle: f32 = masterok.rng.gen_range(0.0..0.0009);
-        let angle = (boop as f32 +masterok.initial_angle) * (0.0002 + random_angle) ;
+        let random_angle: f32 = masterok.rng.gen_range(0.0..0.0003);
+       
+        let mut angle = (boop as f32 +masterok.initial_angle) * (0.0002 + random_angle) ;
+    
         let random_radius: f32 = masterok.rng.gen_range(2.0..90.0);
         let radius = (90.0 + random_radius) * angle;
         let mut xik = radius * angle.cos() * 100.0;
@@ -327,10 +339,11 @@ fn generate_star_positions_in_range(
         xik += random_offset_x;
         yik += random_offset_y;
 
-        if boop % 2 == 0 {
+        if (boop % 2 == 0) && masterok.spiral_arm_count>1 {
             xik = -xik;
             yik = -yik;
         }
+       
 
         // Ensure the new circle does not overlap with any existing circles
         let mut attempts = 0;
@@ -340,8 +353,8 @@ fn generate_star_positions_in_range(
             (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
         }) && attempts < 10
         {
-            xik += masterok.rng.gen_range(-spawning_radius..spawning_radius);
-            yik += masterok.rng.gen_range(-spawning_radius..spawning_radius);
+            xik += masterok.rng.gen_range(-5000.0..5000.0);
+            yik += masterok.rng.gen_range(-5000.0..5000.0);
             attempts += 1;
         }
 
@@ -489,7 +502,7 @@ fn star_watcher(
 
         let potential_value = (masterok.total_stars + ev.0);
 
-        if (potential_value > 1000) && (potential_value < 101000) {
+        if (potential_value > 0) && (potential_value < 101000) {
             masterok.total_stars += ev.0;
             println!("add stars {:?} ", ev.0);
             println!("current stars {:?} ", masterok.total_stars);
@@ -595,3 +608,4 @@ fn despawn_all_stars(
         ev_respawn.send(RespawnStars);
     }
 }
+

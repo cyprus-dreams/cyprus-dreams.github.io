@@ -62,10 +62,10 @@ pub struct Masterik {
 
 impl Masterik {
     pub fn partial_reset(&mut self) {
-        self.total_stars = 10000;
+        self.total_stars = 11000;
         self.gen_seed = self.rng.gen_range(1000..9000000000);
         self.rng = SmallRng::seed_from_u64(self.gen_seed);
-        self.initial_angle= self.rng.gen_range(0.0..5000.0);
+        self.initial_angle= self.rng.gen_range(0.0..1000.0);
         self.positions = Vec::new();
     }
 }
@@ -78,11 +78,11 @@ impl Default for Masterik {
             .as_secs();
         let mut lol = SmallRng::seed_from_u64(ts.clone());
         let beep: u64 = lol.gen_range(1000..9000000000);
-        let init_ang: f32 = lol.gen_range(0.0..5000.0);
+        let init_ang: f32 = lol.gen_range(0.0..1000.0);
         let real = SmallRng::seed_from_u64(beep);
 
         Self {
-            total_stars: 10000,
+            total_stars: 11000,
             rng: real,
             gen_seed: beep,
             spiral_arm_count: 2,
