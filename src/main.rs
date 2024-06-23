@@ -22,6 +22,9 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
 
+use bevy::diagnostic::DiagnosticsStore;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+
 use web_time::Instant;
 
 use rand::rngs::SmallRng;
@@ -37,6 +40,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
+        .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .init_resource::<Masterik>()
         .init_resource::<StarData>()
         .init_resource::<BevyTerminal<RataguiBackend>>()
@@ -202,8 +206,13 @@ fn ui_example_system(
     mut contexts: EguiContexts,
     mut termres: ResMut<BevyTerminal<RataguiBackend>>,
     masterok: Res<Masterik>,
+    diagnostics: Res<DiagnosticsStore>,
 ) {
-    draw_info_menu(&mut termres.terminal_info, &masterok);
+    let fps = diagnostics
+            .get(&FrameTimeDiagnosticsPlugin::FPS)
+            .and_then(|fps| fps.smoothed()).unwrap_or(60.0);
+        
+    draw_info_menu(&mut termres.terminal_info, &masterok, fps );
 
     let mut frame = egui::Frame::default()
         .inner_margin(1.0)
@@ -219,13 +228,13 @@ fn ui_example_system(
         });
 }
 
-fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) {
+fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, fps:f64) {
     terminal
         .draw(|frame| {
             let area = frame.size();
 
             let mut lines = (Text::from(vec![
-                Line::from("FPS: TODO!! "),
+                Line::from(format!("FPS: {} ", fps)),
                 Line::from(" "),
                 Line::from("[WASD] - Move Camera "),
                 Line::from("[Q/E] - Zoom Out/In"),
