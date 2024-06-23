@@ -57,6 +57,7 @@ pub struct Masterik {
     pub m_class: bool,
     pub rng: SmallRng,
     pub positions: PositionsVec,
+    pub initial_angle: f32,
 }
 
 impl Masterik {
@@ -64,6 +65,7 @@ impl Masterik {
         self.total_stars = 10000;
         self.gen_seed = self.rng.gen_range(1000..9000000000);
         self.rng = SmallRng::seed_from_u64(self.gen_seed);
+        self.initial_angle= self.rng.gen_range(0.0..5000.0);
         self.positions = Vec::new();
     }
 }
@@ -76,6 +78,7 @@ impl Default for Masterik {
             .as_secs();
         let mut lol = SmallRng::seed_from_u64(ts.clone());
         let beep: u64 = lol.gen_range(1000..9000000000);
+        let init_ang: f32 = lol.gen_range(0.0..5000.0);
         let real = SmallRng::seed_from_u64(beep);
 
         Self {
@@ -91,6 +94,7 @@ impl Default for Masterik {
             g_class: true,
             k_class: true,
             m_class: true,
+            initial_angle:init_ang,
 
             positions: Vec::new(),
         }

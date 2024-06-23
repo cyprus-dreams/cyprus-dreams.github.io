@@ -67,7 +67,7 @@ fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>) {
             projection: OrthographicProjection {
                 far: 1000.0,
                 near: -1000.0,
-                scale: 350.0,
+                scale: 250.0,
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
@@ -174,8 +174,10 @@ fn keyboard_input_system(
     }
 
     if change_seed {
+        
         masterok.partial_reset();
         ev_change_seed.send(ChangeSeed);
+        
     }
 
     let char_backspace = input.any_pressed([KeyCode::Backspace, KeyCode::Delete]);
@@ -284,12 +286,12 @@ fn generate_star_positions_in_range(
     star_data: &StarData,
 ) {
     for boop in start..end {
-        let random_angle: f32 = masterok.rng.gen_range(0.0..0.009);
-        let angle = boop as f32 * (0.002 + random_angle);
-        let random_radius: f32 = masterok.rng.gen_range(0.0..20.0);
+        let random_angle: f32 = masterok.rng.gen_range(0.0..0.0009);
+        let angle = (boop as f32 +masterok.initial_angle) * (0.0002 + random_angle) ;
+        let random_radius: f32 = masterok.rng.gen_range(2.0..90.0);
         let radius = (90.0 + random_radius) * angle;
-        let mut xik = radius * angle.cos() * 200.0;
-        let mut yik = radius * angle.sin() * 200.0;
+        let mut xik = radius * angle.cos() * 100.0;
+        let mut yik = radius * angle.sin() * 100.0;
 
         // Create a small RNG and add randomness
 
@@ -336,14 +338,14 @@ fn generate_star_positions_in_range(
             let dx = xik - px;
             let dy = yik - py;
             (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
-        }) && attempts < 100
+        }) && attempts < 10
         {
             xik += masterok.rng.gen_range(-spawning_radius..spawning_radius);
             yik += masterok.rng.gen_range(-spawning_radius..spawning_radius);
             attempts += 1;
         }
 
-        if attempts < 97 {
+        if attempts < 9 {
             // Store the new circle position
             masterok.positions.push((xik, yik, spawning_radius));
         }
@@ -358,8 +360,17 @@ fn spawn_initial_stars(
     mut masterok: ResMut<Masterik>,
     star_data: Res<StarData>,
     mut ev_respawn: EventReader<RespawnStars>,
+ //  mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
 ) {
     for resp in ev_respawn.read() {
+
+      //  let (mut projection, mut transform) = query_camera.single_mut();
+     //   transform.rotate_local_z(masterok.initial_angle);
+
+
+
+
+
         generate_star_positions_in_range(
             1,
             masterok.total_stars.clone(),
@@ -403,14 +414,15 @@ fn spawn_initial_stars(
         for randomczik in 1..20000 {
             // initial_counter += 1;
 
-            let spawning_radius: f32 = masterok.rng.gen_range(0.0..60.0);
+            let spawning_radius: f32 = masterok.rng.gen_range(10.0..60.0);
+            let radius = spawning_radius.clone();
 
             let rand_range = randomczik as f32 * 30.0;
 
             let mut random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
             let mut random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
 
-            let radius = spawning_radius.clone();
+            
 
             let star_color = if radius > 500.0 {
                 Color::rgb_u8(159, 162, 222)
@@ -431,19 +443,19 @@ fn spawn_initial_stars(
             while masterok.positions.iter().any(|&(px, py, checking_radius)| {
                 let dx = random_offset_x - px;
                 let dy = random_offset_y - py;
-                (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
-            }) && attempts < 100
+                (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + radius) as f64
+            }) && attempts < 10
             {
-                random_offset_x += masterok.rng.gen_range(-spawning_radius..spawning_radius);
-                random_offset_y += masterok.rng.gen_range(-spawning_radius..spawning_radius);
+                random_offset_x += masterok.rng.gen_range(-radius..radius);
+                random_offset_y += masterok.rng.gen_range(-radius..radius);
                 attempts += 1;
             }
 
-            if attempts < 97 {
+            if attempts < 9 {
                 // Store the new circle position
                 masterok
                     .positions
-                    .push((random_offset_x, random_offset_y, spawning_radius));
+                    .push((random_offset_x, random_offset_y, radius));
 
                 commands.spawn((
                     MaterialMesh2dBundle {
