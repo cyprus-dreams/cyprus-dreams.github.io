@@ -26,13 +26,14 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 mod resources;
-use resources::{BevyTerminal, Masterik, SpawnStars, StarCount, StarsAdded, StarsRemoved};
+use resources::{BevyTerminal, Masterik, SpawnStars, StarCount, StarsAdded, StarsRemoved,PositionsVec, StarData};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .init_resource::<Masterik>()
+        .init_resource::<StarData>()
         .init_resource::<BevyTerminal<RataguiBackend>>()
         .insert_resource(ClearColor(Color::rgb(0.05, 0.05, 0.05)))
         .add_systems(Startup, setup)
@@ -254,29 +255,41 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) 
         .expect("epic fail");
 }
 
-fn spawn_all_stars(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
-    masterok: Res<Masterik>,
-) {
-    let circle_radius: f32 = 100.0;
-    let mut positions = Vec::new();
 
-    for boop in 1..masterok.total_stars {
+
+fn generate_star_positions_in_range(start:i64, end:i64, masterok: &mut Masterik, star_data: &StarData ) {
+
+    for boop in start..end {
         let angle = boop as f32 * 0.002;
         let radius = 90.0 * angle;
         let mut xik = radius * angle.cos() * 200.0;
         let mut yik = radius * angle.sin() * 200.0;
 
         // Create a small RNG and add randomness
-        let mut rng = SmallRng::from_entropy();
 
-        let rand_range = 20000.0 + (boop) as f32;
+        let random_star = masterok.rng.gen_range(0..1000000);
 
-        let random_offset_x: f32 = rng.gen_range(-rand_range..rand_range);
-        let random_offset_y: f32 = rng.gen_range(-rand_range..rand_range);
+        let spawning_radius = if random_star > star_data.k_class_rarity {
+            star_data.m_class_radius
+        } else if random_star > star_data.g_class_rarity {
+            star_data.k_class_radius
+        } else if random_star > star_data.f_class_rarity {
+            star_data.g_class_radius
+        } else if random_star > star_data.a_class_rarity {
+            star_data.f_class_radius
+        } else if random_star > star_data.b_class_rarity {
+            star_data.a_class_radius
+        } else if random_star > star_data.o_class_rarity {
+            star_data.b_class_radius
+        } else {
+            star_data.o_class_radius
+        };
+        
+
+        let rand_range = 10000.0 + (boop) as f32;
+
+        let random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
+        let random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
 
         xik += random_offset_x;
         yik += random_offset_y;
@@ -288,31 +301,62 @@ fn spawn_all_stars(
 
         // Ensure the new circle does not overlap with any existing circles
         let mut attempts = 0;
-        while positions.iter().any(|&(px, py)| {
+        while masterok.positions.iter().any(|&(px, py , checking_radius)| {
             let dx = xik - px;
             let dy = yik - py;
-            (((dx * dx) + (dy * dy)) as f64).sqrt() < (2.0 * circle_radius) as f64
+            (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
         }) && attempts < 100
         {
-            xik += rng.gen_range(-circle_radius..circle_radius);
-            yik += rng.gen_range(-circle_radius..circle_radius);
+            xik += masterok.rng.gen_range(-spawning_radius..spawning_radius);
+            yik += masterok.rng.gen_range(-spawning_radius..spawning_radius);
             attempts += 1;
         }
 
         // Store the new circle position
-        positions.push((xik, yik));
-        // Circle mesh
-        commands.spawn((
-            MaterialMesh2dBundle {
-                mesh: meshes.add(Circle::new(circle_radius)).into(),
-                // 4. Put something bright in a dark environment to see the effect
-                material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
-                transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
-                ..default()
-            },
-            StarCount(boop),
-        ));
+        masterok.positions.push((xik, yik,spawning_radius));
+     
+      
     }
+
+
+    
+
+
+
+    
+}
+
+fn spawn_all_stars(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+    mut masterok: ResMut<Masterik>,
+    star_data: Res<StarData>,
+) {
+   
+
+   generate_star_positions_in_range(1, masterok.total_stars.clone(), &mut masterok, &star_data);
+
+
+   for (x,y,radius) in &masterok.positions {
+
+    commands.spawn((
+        MaterialMesh2dBundle {
+            mesh: meshes.add(Circle::new(radius.clone())).into(),
+            // 4. Put something bright in a dark environment to see the effect
+            material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
+            transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+            ..default()
+        },
+    ));
+
+
+   }
+    
+
+   
+    
 }
 
 fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMut<Masterik>,  mut ev_stars_add: EventWriter<StarsAdded>,  mut ev_stars_remove: EventWriter<StarsRemoved>,) {

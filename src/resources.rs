@@ -13,12 +13,15 @@ use bevy_egui::{
 };
 use egui::{FontData, FontDefinitions, FontFamily};
 use egui_ratatui::RataguiBackend;
+use rand::rngs::SmallRng;
 use ratatui::{
     layout::Rect,
     prelude::{Line, Span, Stylize, Terminal},
     text::Text,
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
+
+use rand::{Rng, SeedableRng};
 
 //create resource to hold the ratatui terminal
 #[derive(Resource)]
@@ -52,7 +55,13 @@ pub struct Masterik {
     pub g_class: bool,
     pub k_class: bool,
     pub m_class: bool,
+    pub rng: SmallRng,
+    pub positions: PositionsVec,
+
+
 }
+
+
 
 impl Masterik {
     pub fn refresh_menus(&mut self) {}
@@ -72,9 +81,54 @@ impl Default for Masterik {
             g_class: true,
             k_class: true,
             m_class: true,
+            rng: SmallRng::seed_from_u64(1000001),
+            positions: Vec::new(),
+           
         }
     }
 }
+
+
+//https://en.wikipedia.org/wiki/Stellar_classification#Harvard_spectral_classification
+#[derive(Resource)]
+pub struct StarData {
+    pub o_class_radius: f32,
+    pub b_class_radius: f32,
+    pub a_class_radius: f32,
+    pub f_class_radius: f32,
+    pub g_class_radius: f32,
+    pub k_class_radius: f32,
+    pub m_class_radius: f32,
+    pub o_class_rarity: i64,
+    pub b_class_rarity: i64,
+    pub a_class_rarity: i64,
+    pub f_class_rarity: i64,
+    pub g_class_rarity: i64,
+    pub k_class_rarity: i64,
+    pub m_class_rarity: i64,
+}
+
+impl Default for StarData {
+    fn default() -> Self {
+        Self {  o_class_radius: 1600.0,
+            b_class_radius: 500.0 ,
+            a_class_radius: 200.0,
+            f_class_radius: 150.0,
+            g_class_radius: 100.0,
+            k_class_radius: 50.0,
+            m_class_radius: 10.0,
+            o_class_rarity: 3,
+            b_class_rarity: 1200 ,
+            a_class_rarity: 6000,
+            f_class_rarity: 30000,
+            g_class_rarity: 70000,
+            k_class_rarity: 120000,
+            m_class_rarity: 760000,
+        
+        
+        
+        
+        }}}
 
 #[derive(Event)]
 pub struct SpawnStars(pub i64);
@@ -86,3 +140,6 @@ pub struct StarsAdded(pub i64);//contains the previous amount of stars
 
 #[derive(Component)]
 pub struct StarCount(pub i64);
+
+
+pub type PositionsVec = Vec<(f32, f32, f32)>; // x y radius
