@@ -37,7 +37,7 @@ fn main() {
         .init_resource::<BevyTerminal<RataguiBackend>>()
         .insert_resource(ClearColor(Color::rgb(0.05, 0.05, 0.05)))
         .add_systems(Startup, setup)
-        .add_systems(PostStartup, spawn_all_stars)
+        .add_systems(PostStartup, spawn_initial_stars)
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, ui_example_system)
         .add_systems(Update, star_watcher)
@@ -199,7 +199,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) 
                 Line::from("Current Seed: TODO!!"),
                 Line::from("[T] - Change Seed"),
                 Line::from(" "),
-                Line::from("Stars: TODO!! "),
+                Line::from(format!("Stars: {} ",masterok.total_stars)),
                 Line::from("[U/J] - Add/Delete 1000 Stars"),
                 Line::from("[I/K] - Add/Remove 10000 Stars"),
                 Line::from(" "),
@@ -328,7 +328,7 @@ fn generate_star_positions_in_range(start:i64, end:i64, masterok: &mut Masterik,
     
 }
 
-fn spawn_all_stars(
+fn spawn_initial_stars(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -389,13 +389,46 @@ fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMu
 }
 
 
-fn star_adder( mut masterok: ResMut<Masterik>,  mut ev_stars_add: EventReader<StarsAdded>) {
+fn star_adder( mut masterok: ResMut<Masterik>, star_data: Res<StarData>, mut ev_stars_add: EventReader<StarsAdded>, mut commands: Commands,    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,) {
     //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
 
     for ev in ev_stars_add.read() {
         let previous_value = ev.0;
 
         let new_value = (masterok.total_stars );
+
+        
+
+        if new_value > previous_value {
+            let amount_added = new_value - previous_value;
+
+            generate_star_positions_in_range(previous_value, new_value,&mut masterok, &star_data);
+
+            let mut positions_clone = masterok.positions.clone();
+
+            for new_star in 0..amount_added {
+
+                let (x,y,radius) = positions_clone.pop().unwrap_or((0.0,0.0,0.0));
+
+                let radius = radius.clone();
+
+                let star_color = if radius > 500.0 {Color::rgb_u8(159, 162, 222)} else if radius > 200.0 {Color::rgb_u8(240, 240, 254)} else if radius > 140.0 {Color::rgb_u8(248, 254, 252)} else  if radius > 99.0 {Color::rgb_u8(247, 254, 144)} else if radius > 45.0 {Color::rgb_u8(254, 170, 52)} else {Color::rgb_u8(254, 70, 70)};
+            
+                commands.spawn((
+                    MaterialMesh2dBundle {
+                        mesh: meshes.add(Circle::new(radius.clone())).into(),
+                        // 4. Put something bright in a dark environment to see the effect
+                        material: materials.add(star_color),
+                        transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+                        ..default()
+                    },
+                ));
+
+
+            }
+
+        }
 
 
       
