@@ -3471,6 +3471,7 @@ dependencies = [
  "egui_ratatui",
  "rand",
  "ratatui",
+ "web-time 1.1.0",
 ]
 
 [[package]]

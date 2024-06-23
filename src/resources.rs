@@ -6,7 +6,7 @@ use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
 };
-
+use web_time::{Instant, SystemTime};
 use bevy_egui::{
     egui::{self, Frame},
     EguiContexts, EguiPlugin,
@@ -45,7 +45,7 @@ impl Default for BevyTerminal<RataguiBackend> {
 #[derive(Resource)]
 pub struct Masterik {
     pub total_stars: i64,
-    pub gen_seed: i64,
+    pub gen_seed: u64,
     pub spiral_arm_count: i64,
     pub camera_move_speed: f32,
     pub o_class: bool,
@@ -65,9 +65,16 @@ impl Masterik {
 
 impl Default for Masterik {
     fn default() -> Self {
+        let ts = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
+        let mut lol = SmallRng::seed_from_u64(ts.clone());
+        let beep:u64 = lol.gen_range(1000..9000000000);
+        let real = SmallRng::seed_from_u64(beep);
+
+      
         Self {
             total_stars: 10000,
-            gen_seed: 1111111,
+            rng: real,
+            gen_seed: beep,
             spiral_arm_count: 2,
             camera_move_speed: 10.0,
             o_class: true,
@@ -77,7 +84,7 @@ impl Default for Masterik {
             g_class: true,
             k_class: true,
             m_class: true,
-            rng: SmallRng::seed_from_u64(1000001),
+            
             positions: Vec::new(),
         }
     }

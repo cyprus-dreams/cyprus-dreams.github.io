@@ -22,6 +22,8 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
 
+use web_time::Instant;
+
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
@@ -196,7 +198,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) 
                 Line::from("[WASD] - Move Camera "),
                 Line::from("[Q/E] - Zoom Out/In"),
                 Line::from(" "),
-                Line::from("Current Seed: TODO!!"),
+                Line::from(format!("Seed: {} ", masterok.gen_seed)),
                 Line::from("[T] - Change Seed"),
                 Line::from(" "),
                 Line::from(format!("Stars: {} ", masterok.total_stars)),
