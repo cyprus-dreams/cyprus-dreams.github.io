@@ -6,7 +6,6 @@ use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
 };
-use web_time::{Instant, SystemTime};
 use bevy_egui::{
     egui::{self, Frame},
     EguiContexts, EguiPlugin,
@@ -20,6 +19,7 @@ use ratatui::{
     text::Text,
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
+use web_time::{Instant, SystemTime};
 
 use rand::{Rng, SeedableRng};
 
@@ -70,12 +70,14 @@ impl Masterik {
 
 impl Default for Masterik {
     fn default() -> Self {
-        let ts = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs();
+        let ts = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
         let mut lol = SmallRng::seed_from_u64(ts.clone());
-        let beep:u64 = lol.gen_range(1000..9000000000);
+        let beep: u64 = lol.gen_range(1000..9000000000);
         let real = SmallRng::seed_from_u64(beep);
 
-      
         Self {
             total_stars: 10000,
             rng: real,
@@ -89,7 +91,7 @@ impl Default for Masterik {
             g_class: true,
             k_class: true,
             m_class: true,
-            
+
             positions: Vec::new(),
         }
     }
@@ -142,7 +144,6 @@ pub struct SpawnStars(pub i64);
 pub struct StarsRemoved(pub i64); //contains the previous amount of stars
 #[derive(Event)]
 pub struct StarsAdded(pub i64); //contains the previous amount of stars
-
 
 #[derive(Event)]
 pub struct ChangeSeed; //contains the previous amount of stars

@@ -1,5 +1,6 @@
 //! Illustrates bloom post-processing in 2d.
 
+use bevy::ecs::system::RunSystemOnce;
 use bevy::{
     core_pipeline::{
         bloom::{BloomCompositeMode, BloomSettings},
@@ -8,7 +9,6 @@ use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
 };
-use bevy::ecs::system::RunSystemOnce;
 use bevy_egui::{
     egui::{self, Frame},
     EguiContexts, EguiPlugin,
@@ -29,7 +29,8 @@ use rand::{Rng, SeedableRng};
 
 mod resources;
 use resources::{
-    BevyTerminal, Masterik, PositionsVec, SpawnStars, StarCount, StarData, StarsAdded, StarsRemoved, ChangeSeed, RespawnStars,
+    BevyTerminal, ChangeSeed, Masterik, PositionsVec, RespawnStars, SpawnStars, StarCount,
+    StarData, StarsAdded, StarsRemoved,
 };
 
 fn main() {
@@ -56,7 +57,7 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands,mut ev_respawn: EventWriter<RespawnStars>,) {
+fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>) {
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
@@ -83,7 +84,6 @@ fn keyboard_input_system(
     mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
     mut ev_spawn_stars: EventWriter<SpawnStars>,
     mut ev_change_seed: EventWriter<ChangeSeed>,
-   
 ) {
     let (mut projection, mut transform) = query_camera.single_mut();
 
@@ -109,8 +109,6 @@ fn keyboard_input_system(
     let remove_10000 = input.any_just_pressed([KeyCode::KeyK]);
 
     let mut change_seed = input.any_just_pressed([KeyCode::KeyT]);
-
-  
 
     if add_1000 {
         ev_spawn_stars.send(SpawnStars(1000));
@@ -178,7 +176,6 @@ fn keyboard_input_system(
     if change_seed {
         masterok.partial_reset();
         ev_change_seed.send(ChangeSeed);
-
     }
 
     let char_backspace = input.any_pressed([KeyCode::Backspace, KeyCode::Delete]);
@@ -224,7 +221,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) 
                 Line::from(format!("Seed: {} ", masterok.gen_seed)),
                 Line::from("[T] - Change Seed"),
                 Line::from(" "),
-                Line::from(format!("Stars: {} ", masterok.total_stars)),
+                Line::from(format!("Stars: {} ", masterok.total_stars + 20000)), //adding 20000 here because I spawn 20000 stars to act as the backdrop of the galaxy
                 Line::from("[U/J] - Add/Delete 1000 Stars"),
                 Line::from("[I/K] - Add/Remove 10000 Stars"),
                 Line::from(" "),
@@ -287,8 +284,10 @@ fn generate_star_positions_in_range(
     star_data: &StarData,
 ) {
     for boop in start..end {
-        let angle = boop as f32 * 0.002;
-        let radius = 90.0 * angle;
+        let random_angle: f32 = masterok.rng.gen_range(0.0..0.009);
+        let angle = boop as f32 * (0.002 + random_angle);
+        let random_radius: f32 = masterok.rng.gen_range(0.0..20.0);
+        let radius = (90.0 + random_radius) * angle;
         let mut xik = radius * angle.cos() * 200.0;
         let mut yik = radius * angle.sin() * 200.0;
 
@@ -296,7 +295,8 @@ fn generate_star_positions_in_range(
 
         let random_star = masterok.rng.gen_range(0..1000000);
 
-        let mut spawning_radius = if (random_star > star_data.k_class_rarity) && (masterok.m_class) {
+        let mut spawning_radius = if (random_star > star_data.k_class_rarity) && (masterok.m_class)
+        {
             star_data.m_class_radius
         } else if (random_star > star_data.g_class_rarity) && (masterok.k_class) {
             star_data.k_class_radius
@@ -308,17 +308,16 @@ fn generate_star_positions_in_range(
             star_data.a_class_radius
         } else if (random_star > star_data.o_class_rarity) && (masterok.b_class) {
             star_data.b_class_radius
-        } else if  (masterok.o_class){
+        } else if (masterok.o_class) {
             star_data.o_class_radius
-        }
-        else {1.1}
-        ;
-        
+        } else {
+            70.0
+        };
 
         let random_radius = masterok.rng.gen_range(0..50);
         spawning_radius += random_radius as f32;
 
-        let rand_range = 10000.0 + (boop) as f32;
+        let rand_range = 5000.0 as f32;
 
         let random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
         let random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
@@ -346,10 +345,8 @@ fn generate_star_positions_in_range(
 
         if attempts < 97 {
             // Store the new circle position
-        masterok.positions.push((xik, yik, spawning_radius));
+            masterok.positions.push((xik, yik, spawning_radius));
         }
-
-        
     }
 }
 
@@ -362,15 +359,21 @@ fn spawn_initial_stars(
     star_data: Res<StarData>,
     mut ev_respawn: EventReader<RespawnStars>,
 ) {
-
-    for resp in ev_respawn.read() {  generate_star_positions_in_range(1, masterok.total_stars.clone(), &mut masterok, &star_data);
+    for resp in ev_respawn.read() {
+        generate_star_positions_in_range(
+            1,
+            masterok.total_stars.clone(),
+            &mut masterok,
+            &star_data,
+        );
 
         let mut initial_counter = 0;
+
         for (x, y, radius) in &masterok.positions {
             initial_counter += 1;
-    
+
             let radius = radius.clone();
-    
+
             let star_color = if radius > 500.0 {
                 Color::rgb_u8(159, 162, 222)
             } else if radius > 200.0 {
@@ -384,7 +387,7 @@ fn spawn_initial_stars(
             } else {
                 Color::rgb_u8(254, 70, 70)
             };
-    
+
             commands.spawn((
                 MaterialMesh2dBundle {
                     mesh: meshes.add(Circle::new(radius.clone())).into(),
@@ -395,9 +398,70 @@ fn spawn_initial_stars(
                 },
                 StarCount(initial_counter),
             ));
-        }}
+        }
 
-  
+        for randomczik in 1..20000 {
+            // initial_counter += 1;
+
+            let spawning_radius: f32 = masterok.rng.gen_range(0.0..60.0);
+
+            let rand_range = randomczik as f32 * 30.0;
+
+            let mut random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
+            let mut random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
+
+            let radius = spawning_radius.clone();
+
+            let star_color = if radius > 500.0 {
+                Color::rgb_u8(159, 162, 222)
+            } else if radius > 200.0 {
+                Color::rgb_u8(240, 240, 254)
+            } else if radius > 140.0 {
+                Color::rgb_u8(248, 254, 252)
+            } else if radius > 99.0 {
+                Color::rgb_u8(247, 254, 144)
+            } else if radius > 45.0 {
+                Color::rgb_u8(254, 170, 52)
+            } else {
+                Color::rgb_u8(254, 70, 70)
+            };
+
+            // Ensure the new circle does not overlap with any existing circles
+            let mut attempts = 0;
+            while masterok.positions.iter().any(|&(px, py, checking_radius)| {
+                let dx = random_offset_x - px;
+                let dy = random_offset_y - py;
+                (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
+            }) && attempts < 100
+            {
+                random_offset_x += masterok.rng.gen_range(-spawning_radius..spawning_radius);
+                random_offset_y += masterok.rng.gen_range(-spawning_radius..spawning_radius);
+                attempts += 1;
+            }
+
+            if attempts < 97 {
+                // Store the new circle position
+                masterok
+                    .positions
+                    .push((random_offset_x, random_offset_y, spawning_radius));
+
+                commands.spawn((
+                    MaterialMesh2dBundle {
+                        mesh: meshes.add(Circle::new(radius.clone())).into(),
+                        // 4. Put something bright in a dark environment to see the effect
+                        material: materials.add(star_color),
+                        transform: Transform::from_translation(Vec3::new(
+                            random_offset_x,
+                            random_offset_y,
+                            0.,
+                        )),
+                        ..default()
+                    },
+                    StarCount(11),
+                ));
+            }
+        }
+    }
 }
 
 fn star_watcher(
@@ -413,7 +477,7 @@ fn star_watcher(
 
         let potential_value = (masterok.total_stars + ev.0);
 
-        if (potential_value > 1000) && (potential_value < 151000) {
+        if (potential_value > 1000) && (potential_value < 101000) {
             masterok.total_stars += ev.0;
             println!("add stars {:?} ", ev.0);
             println!("current stars {:?} ", masterok.total_stars);
@@ -488,7 +552,7 @@ fn star_remover(
     mut masterok: ResMut<Masterik>,
     star_data: Res<StarData>,
     mut ev_stars_remove: EventReader<StarsRemoved>,
-    
+
     mut commands: Commands,
     query: Query<(Entity, &StarCount)>,
 ) {
@@ -505,22 +569,17 @@ fn star_remover(
     }
 }
 
-
 fn despawn_all_stars(
     mut ev_change_seed: EventReader<ChangeSeed>,
     mut ev_respawn: EventWriter<RespawnStars>,
-  
+
     mut commands: Commands,
     query: Query<(Entity, &StarCount)>,
 ) {
-    for ev in ev_change_seed.read() { for (entity, sc) in query.iter() {
-            
-        commands.entity(entity).despawn();
-       
-    
-}
-ev_respawn.send(RespawnStars);}
-
-       
-    
+    for ev in ev_change_seed.read() {
+        for (entity, sc) in query.iter() {
+            commands.entity(entity).despawn();
+        }
+        ev_respawn.send(RespawnStars);
+    }
 }
