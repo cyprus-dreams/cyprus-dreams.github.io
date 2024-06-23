@@ -269,7 +269,7 @@ fn generate_star_positions_in_range(start:i64, end:i64, masterok: &mut Masterik,
 
         let random_star = masterok.rng.gen_range(0..1000000);
 
-        let spawning_radius = if random_star > star_data.k_class_rarity {
+        let mut spawning_radius = if random_star > star_data.k_class_rarity {
             star_data.m_class_radius
         } else if random_star > star_data.g_class_rarity {
             star_data.k_class_radius
@@ -285,6 +285,8 @@ fn generate_star_positions_in_range(start:i64, end:i64, masterok: &mut Masterik,
             star_data.o_class_radius
         };
         
+        let random_radius = masterok.rng.gen_range(0..50);
+        spawning_radius += random_radius as f32;
 
         let rand_range = 10000.0 + (boop) as f32;
 
@@ -341,11 +343,15 @@ fn spawn_all_stars(
 
    for (x,y,radius) in &masterok.positions {
 
+    let radius = radius.clone();
+
+    let star_color = if radius > 500.0 {Color::rgb_u8(159, 162, 222)} else if radius > 200.0 {Color::rgb_u8(240, 240, 254)} else if radius > 140.0 {Color::rgb_u8(248, 254, 252)} else  if radius > 99.0 {Color::rgb_u8(247, 254, 144)} else if radius > 45.0 {Color::rgb_u8(254, 170, 52)} else {Color::rgb_u8(254, 70, 70)};
+
     commands.spawn((
         MaterialMesh2dBundle {
             mesh: meshes.add(Circle::new(radius.clone())).into(),
             // 4. Put something bright in a dark environment to see the effect
-            material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
+            material: materials.add(star_color),
             transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
             ..default()
         },
