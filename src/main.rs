@@ -17,7 +17,7 @@ use egui::{FontData, FontDefinitions, FontFamily};
 use egui_ratatui::RataguiBackend;
 use ratatui::{
     layout::Rect,
-    prelude::{Line, Span, Stylize, Terminal,Modifier},
+    prelude::{Line, Modifier, Span, Stylize, Terminal},
     text::Text,
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
@@ -26,7 +26,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 mod resources;
-use resources::{BevyTerminal, Masterik,SpawnStars, StarCount};
+use resources::{BevyTerminal, Masterik, SpawnStars, StarCount};
 
 fn main() {
     App::new()
@@ -85,7 +85,6 @@ fn keyboard_input_system(
     let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
     let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
 
-
     let o_class = input.any_just_pressed([KeyCode::KeyZ]);
     let b_class = input.any_just_pressed([KeyCode::KeyX]);
     let a_class = input.any_just_pressed([KeyCode::KeyC]);
@@ -94,7 +93,6 @@ fn keyboard_input_system(
     let k_class = input.any_just_pressed([KeyCode::KeyN]);
     let m_class = input.any_just_pressed([KeyCode::KeyM]);
 
-
     let add_1000 = input.any_just_pressed([KeyCode::KeyU]);
     let remove_1000 = input.any_just_pressed([KeyCode::KeyJ]);
     let add_10000 = input.any_just_pressed([KeyCode::KeyI]);
@@ -102,17 +100,15 @@ fn keyboard_input_system(
 
     if add_1000 {
         ev_spawn_stars.send(SpawnStars(1000));
-    }
-   else if remove_1000 {
+    } else if remove_1000 {
         ev_spawn_stars.send(SpawnStars(-1000));
-    }
-    else if add_10000 {
+    } else if add_10000 {
         ev_spawn_stars.send(SpawnStars(10000));
-    }
-    else if remove_10000 {
+    } else if remove_10000 {
         ev_spawn_stars.send(SpawnStars(-10000));
+    } else {
+        ();
     }
-    else {();}
 
     if o_class {
         masterok.o_class = !masterok.o_class;
@@ -136,8 +132,6 @@ fn keyboard_input_system(
         masterok.m_class = !masterok.m_class;
     }
 
-
-
     if char_up {
         transform.translation.y += (masterok.camera_move_speed * projection.scale);
     }
@@ -150,7 +144,6 @@ fn keyboard_input_system(
     if char_right {
         transform.translation.x += (masterok.camera_move_speed * projection.scale);
     }
-
 
     if char_q {
         // zoom out
@@ -176,8 +169,10 @@ fn ui_example_system(
 ) {
     draw_info_menu(&mut termres.terminal_info, &masterok);
 
-    let mut frame = egui::Frame::default().inner_margin(1.0).outer_margin(1.0).fill(egui::Color32::BLACK);
- 
+    let mut frame = egui::Frame::default()
+        .inner_margin(1.0)
+        .outer_margin(1.0)
+        .fill(egui::Color32::BLACK);
 
     egui::SidePanel::right("my_left_panel")
         .frame(frame)
@@ -199,28 +194,53 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) 
                 Line::from("[WASD] - Move Camera "),
                 Line::from("[Q/E] - Zoom Out/In"),
                 Line::from(" "),
-             
                 Line::from("Current Seed: TODO!!"),
                 Line::from("[T] - Change Seed"),
                 Line::from(" "),
-               
                 Line::from("Stars: TODO!! "),
                 Line::from("[U/J] - Add/Delete 1000 Stars"),
                 Line::from("[I/K] - Add/Remove 10000 Stars"),
                 Line::from(" "),
-           
                 Line::from("Spiral Arms: TODO!!"),
                 Line::from("[O/L] - Add/Remove Spiral Arm"),
                 Line::from(" "),
                 Line::from("Toggle Star Types in Galaxy"),
                 Line::from(" "),
-                Line::from("[Z] - O-Class (Blue Giant)").style( if masterok.o_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
-                Line::from("[X] - B-Class (Blue-White)").style( if masterok.b_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
-                Line::from("[C] - A-Class (White)").style( if masterok.a_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
-                Line::from("[V] - F-Class (Yellow-White Dwarf)").style( if masterok.f_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
-                Line::from("[B] - G-Class (Sun)").style( if masterok.g_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
-                Line::from("[N] - K-Class (Orange Dwarf)").style( if masterok.k_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
-                Line::from("[M] - M-Class (Red Dwarf)").style( if masterok.m_class {Modifier::empty()}else {Modifier::CROSSED_OUT}),
+                Line::from("[Z] - O-Class (Blue Giant)").style(if masterok.o_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
+                Line::from("[X] - B-Class (Blue-White)").style(if masterok.b_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
+                Line::from("[C] - A-Class (White)").style(if masterok.a_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
+                Line::from("[V] - F-Class (Yellow-White Dwarf)").style(if masterok.f_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
+                Line::from("[B] - G-Class (Sun)").style(if masterok.g_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
+                Line::from("[N] - K-Class (Orange Dwarf)").style(if masterok.k_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
+                Line::from("[M] - M-Class (Red Dwarf)").style(if masterok.m_class {
+                    Modifier::empty()
+                } else {
+                    Modifier::CROSSED_OUT
+                }),
             ]));
 
             frame.render_widget(
@@ -238,7 +258,7 @@ fn spawn_all_stars(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
-    masterok: Res<Masterik>
+    masterok: Res<Masterik>,
 ) {
     let circle_radius: f32 = 100.0;
     let mut positions = Vec::new();
@@ -281,23 +301,36 @@ fn spawn_all_stars(
         // Store the new circle position
         positions.push((xik, yik));
         // Circle mesh
-        commands.spawn((MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(circle_radius)).into(),
-            // 4. Put something bright in a dark environment to see the effect
-            material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
-            transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
-            ..default()
-        },
-    StarCount(boop)));
+        commands.spawn((
+            MaterialMesh2dBundle {
+                mesh: meshes.add(Circle::new(circle_radius)).into(),
+                // 4. Put something bright in a dark environment to see the effect
+                material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
+                transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
+                ..default()
+            },
+            StarCount(boop),
+        ));
     }
 }
 
+fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMut<Masterik>) {
+    //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
 
-fn star_watcher(
-    mut ev_spawn_stars: EventReader<SpawnStars>,
-    mut masterok: ResMut<Masterik>,
-) {
     for ev in ev_spawn_stars.read() {
-        println!("add stars {:?} ", ev.0);
+        let previous_value = masterok.total_stars.clone();
+
+        let potential_value = (masterok.total_stars + ev.0);
+
+        if (potential_value > 10000) && (potential_value < 1000000) {
+            masterok.total_stars += ev.0;
+            println!("add stars {:?} ", ev.0);
+            println!("current stars {:?} ", masterok.total_stars);
+
+            //removing stars
+            if (ev.0 < 0) {
+            } else {
+            }
+        }
     }
 }

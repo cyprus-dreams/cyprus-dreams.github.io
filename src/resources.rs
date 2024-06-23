@@ -65,18 +65,16 @@ impl Default for Masterik {
             gen_seed: 1111111,
             spiral_arm_count: 2,
             camera_move_speed: 10.0,
-             o_class: true,
-     b_class: true,
-     a_class: true,
-     f_class: true,
-     g_class: true,
-     k_class: true,
-     m_class: true,
+            o_class: true,
+            b_class: true,
+            a_class: true,
+            f_class: true,
+            g_class: true,
+            k_class: true,
+            m_class: true,
         }
     }
 }
-
-
 
 #[derive(Event)]
 pub struct SpawnStars(pub i64);
