@@ -111,7 +111,7 @@ fn keyboard_input_system(
     let change_seed = input.any_just_pressed([KeyCode::KeyT]);
 
     if change_seed {
-        *masterok = Masterik::default();
+        masterok.partial_reset();
         ev_change_seed.send(ChangeSeed);
 
     }
@@ -287,7 +287,7 @@ fn generate_star_positions_in_range(
 
         let random_star = masterok.rng.gen_range(0..1000000);
 
-        let mut spawning_radius = if random_star > star_data.k_class_rarity {
+        let mut spawning_radius = if (random_star > star_data.k_class_rarity) && (masterok.m_class) {
             star_data.m_class_radius
         } else if random_star > star_data.g_class_rarity {
             star_data.k_class_radius

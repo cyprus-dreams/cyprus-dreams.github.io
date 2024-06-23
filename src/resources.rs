@@ -60,7 +60,12 @@ pub struct Masterik {
 }
 
 impl Masterik {
-    pub fn refresh_menus(&mut self) {}
+    pub fn partial_reset(&mut self) {
+        self.total_stars = 10000;
+        self.gen_seed = self.rng.gen_range(1000..9000000000);
+        self.rng = SmallRng::seed_from_u64(self.gen_seed);
+        self.positions = Vec::new();
+    }
 }
 
 impl Default for Masterik {
