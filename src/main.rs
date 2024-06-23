@@ -289,19 +289,22 @@ fn generate_star_positions_in_range(
 
         let mut spawning_radius = if (random_star > star_data.k_class_rarity) && (masterok.m_class) {
             star_data.m_class_radius
-        } else if random_star > star_data.g_class_rarity {
+        } else if (random_star > star_data.g_class_rarity) && (masterok.k_class) {
             star_data.k_class_radius
-        } else if random_star > star_data.f_class_rarity {
+        } else if (random_star > star_data.f_class_rarity) && (masterok.g_class) {
             star_data.g_class_radius
-        } else if random_star > star_data.a_class_rarity {
+        } else if (random_star > star_data.a_class_rarity) && (masterok.f_class) {
             star_data.f_class_radius
-        } else if random_star > star_data.b_class_rarity {
+        } else if (random_star > star_data.b_class_rarity) && (masterok.a_class) {
             star_data.a_class_radius
-        } else if random_star > star_data.o_class_rarity {
+        } else if (random_star > star_data.o_class_rarity) && (masterok.b_class) {
             star_data.b_class_radius
-        } else {
+        } else if  (masterok.o_class){
             star_data.o_class_radius
-        };
+        }
+        else {1.1}
+        ;
+        
 
         let random_radius = masterok.rng.gen_range(0..50);
         spawning_radius += random_radius as f32;
@@ -332,8 +335,12 @@ fn generate_star_positions_in_range(
             attempts += 1;
         }
 
-        // Store the new circle position
+        if attempts < 97 {
+            // Store the new circle position
         masterok.positions.push((xik, yik, spawning_radius));
+        }
+
+        
     }
 }
 
