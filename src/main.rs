@@ -26,7 +26,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 mod resources;
-use resources::{BevyTerminal, Masterik};
+use resources::{BevyTerminal, Masterik,SpawnStars, StarCount};
 
 fn main() {
     App::new()
@@ -39,6 +39,8 @@ fn main() {
         .add_systems(PostStartup, spawn_all_stars)
         .add_systems(Update, keyboard_input_system)
         .add_systems(Update, ui_example_system)
+        .add_systems(Update, star_watcher)
+        .add_event::<SpawnStars>()
         .run();
 }
 
@@ -71,6 +73,7 @@ fn keyboard_input_system(
     input: Res<ButtonInput<KeyCode>>,
     mut masterok: ResMut<Masterik>,
     mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
+    mut ev_spawn_stars: EventWriter<SpawnStars>,
 ) {
     let (mut projection, mut transform) = query_camera.single_mut();
 
@@ -78,6 +81,9 @@ fn keyboard_input_system(
     let char_down = input.any_pressed([KeyCode::KeyS]);
     let char_left = input.any_pressed([KeyCode::KeyA]);
     let char_right = input.any_pressed([KeyCode::KeyD]);
+
+    let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
+    let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
 
 
     let o_class = input.any_just_pressed([KeyCode::KeyZ]);
@@ -87,6 +93,26 @@ fn keyboard_input_system(
     let g_class = input.any_just_pressed([KeyCode::KeyB]);
     let k_class = input.any_just_pressed([KeyCode::KeyN]);
     let m_class = input.any_just_pressed([KeyCode::KeyM]);
+
+
+    let add_1000 = input.any_just_pressed([KeyCode::KeyU]);
+    let remove_1000 = input.any_just_pressed([KeyCode::KeyJ]);
+    let add_10000 = input.any_just_pressed([KeyCode::KeyI]);
+    let remove_10000 = input.any_just_pressed([KeyCode::KeyK]);
+
+    if add_1000 {
+        ev_spawn_stars.send(SpawnStars(1000));
+    }
+   else if remove_1000 {
+        ev_spawn_stars.send(SpawnStars(-1000));
+    }
+    else if add_10000 {
+        ev_spawn_stars.send(SpawnStars(10000));
+    }
+    else if remove_10000 {
+        ev_spawn_stars.send(SpawnStars(-10000));
+    }
+    else {();}
 
     if o_class {
         masterok.o_class = !masterok.o_class;
@@ -125,8 +151,6 @@ fn keyboard_input_system(
         transform.translation.x += (masterok.camera_move_speed * projection.scale);
     }
 
-    let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
-    let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
 
     if char_q {
         // zoom out
@@ -148,9 +172,9 @@ fn keyboard_input_system(
 fn ui_example_system(
     mut contexts: EguiContexts,
     mut termres: ResMut<BevyTerminal<RataguiBackend>>,
-    mut masterok: ResMut<Masterik>,
+    masterok: Res<Masterik>,
 ) {
-    draw_info_menu(&mut termres.terminal_info, &mut masterok);
+    draw_info_menu(&mut termres.terminal_info, &masterok);
 
     let mut frame = egui::Frame::default().inner_margin(1.0).outer_margin(1.0).fill(egui::Color32::BLACK);
  
@@ -164,7 +188,7 @@ fn ui_example_system(
         });
 }
 
-fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &mut Masterik) {
+fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik) {
     terminal
         .draw(|frame| {
             let area = frame.size();
@@ -214,11 +238,12 @@ fn spawn_all_stars(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
+    masterok: Res<Masterik>
 ) {
     let circle_radius: f32 = 100.0;
     let mut positions = Vec::new();
 
-    for boop in 1..3000 {
+    for boop in 1..masterok.total_stars {
         let angle = boop as f32 * 0.002;
         let radius = 90.0 * angle;
         let mut xik = radius * angle.cos() * 200.0;
@@ -226,8 +251,11 @@ fn spawn_all_stars(
 
         // Create a small RNG and add randomness
         let mut rng = SmallRng::from_entropy();
-        let random_offset_x: f32 = rng.gen_range(-20000.0..20000.0);
-        let random_offset_y: f32 = rng.gen_range(-20000.0..20000.0);
+
+        let rand_range = 20000.0 + (boop) as f32;
+
+        let random_offset_x: f32 = rng.gen_range(-rand_range..rand_range);
+        let random_offset_y: f32 = rng.gen_range(-rand_range..rand_range);
 
         xik += random_offset_x;
         yik += random_offset_y;
@@ -253,12 +281,23 @@ fn spawn_all_stars(
         // Store the new circle position
         positions.push((xik, yik));
         // Circle mesh
-        commands.spawn(MaterialMesh2dBundle {
+        commands.spawn((MaterialMesh2dBundle {
             mesh: meshes.add(Circle::new(circle_radius)).into(),
             // 4. Put something bright in a dark environment to see the effect
             material: materials.add(Color::rgb(7.5, 0.0, 7.5)),
             transform: Transform::from_translation(Vec3::new(xik as f32, yik as f32, 0.)),
             ..default()
-        });
+        },
+    StarCount(boop)));
+    }
+}
+
+
+fn star_watcher(
+    mut ev_spawn_stars: EventReader<SpawnStars>,
+    mut masterok: ResMut<Masterik>,
+) {
+    for ev in ev_spawn_stars.read() {
+        println!("add stars {:?} ", ev.0);
     }
 }
