@@ -26,7 +26,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 mod resources;
-use resources::{BevyTerminal, Masterik, SpawnStars, StarCount};
+use resources::{BevyTerminal, Masterik, SpawnStars, StarCount, StarsAdded, StarsRemoved};
 
 fn main() {
     App::new()
@@ -41,14 +41,14 @@ fn main() {
         .add_systems(Update, ui_example_system)
         .add_systems(Update, star_watcher)
         .add_event::<SpawnStars>()
+        .add_event::<StarsAdded>()
+        .add_event::<StarsRemoved>()
         .run();
 }
 
 fn setup(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
+
 ) {
     commands.spawn((
         Camera2dBundle {
@@ -314,7 +314,7 @@ fn spawn_all_stars(
     }
 }
 
-fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMut<Masterik>) {
+fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMut<Masterik>,  mut ev_stars_add: EventWriter<StarsAdded>,  mut ev_stars_remove: EventWriter<StarsRemoved>,) {
     //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
 
     for ev in ev_spawn_stars.read() {
@@ -329,7 +329,9 @@ fn star_watcher(mut ev_spawn_stars: EventReader<SpawnStars>, mut masterok: ResMu
 
             //removing stars
             if (ev.0 < 0) {
+                ev_stars_remove.send(StarsRemoved(previous_value));
             } else {
+                ev_stars_add.send(StarsAdded(previous_value));
             }
         }
     }

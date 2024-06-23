@@ -79,5 +79,10 @@ impl Default for Masterik {
 #[derive(Event)]
 pub struct SpawnStars(pub i64);
 
+#[derive(Event)]
+pub struct StarsRemoved(pub i64);
+#[derive(Event)]
+pub struct StarsAdded(pub i64);
+
 #[derive(Component)]
 pub struct StarCount(pub i64);
