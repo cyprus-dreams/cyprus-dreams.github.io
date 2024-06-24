@@ -150,19 +150,19 @@ fn keyboard_input_system(
     
         if add_angle {
 
-            masterok.angle_mod += 0.00011;
+            masterok.angle_mod += 0.0011;
             change_seed = true;
         }
-        if remove_angle && (masterok.angle_mod >0.00006){
-            masterok.angle_mod -= 0.00005;
+        if remove_angle && (masterok.angle_mod >0.001){
+            masterok.angle_mod -= 0.001;
             change_seed = true;
         }
         if add_radius {
-            masterok.radius_mod += 50.0;
+            masterok.radius_mod += 300.0;
             change_seed = true;
         }
-        if remove_radius && (masterok.radius_mod >30.0){
-            masterok.radius_mod -= 50.0;
+        if remove_radius && (masterok.radius_mod >310.0){
+            masterok.radius_mod -= 200.0;
             change_seed = true;
         }
 
@@ -170,7 +170,7 @@ fn keyboard_input_system(
             masterok.distance_mod += 10.0;
             change_seed = true;
         }
-        if remove_distance && (masterok.distance_mod >20.0){
+        if remove_distance && (masterok.distance_mod >11.0){
             masterok.distance_mod -= 10.0;
             change_seed = true;
         }
