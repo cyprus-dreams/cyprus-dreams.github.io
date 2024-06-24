@@ -107,22 +107,52 @@ fn keyboard_input_system(
     let k_class = input.any_just_pressed([KeyCode::KeyN]);
     let m_class = input.any_just_pressed([KeyCode::KeyM]);
 
-    let add_arm = input.any_just_pressed([KeyCode::KeyO]);
-    let delete_arm = input.any_just_pressed([KeyCode::KeyL]);
 
-    
+    let add_angle = input.any_just_pressed([KeyCode::KeyT]);
+    let remove_angle = input.any_just_pressed([KeyCode::KeyG]);
+    let add_radius = input.any_just_pressed([KeyCode::KeyY]);
+    let remove_radius = input.any_just_pressed([KeyCode::KeyH]);
+    let add_distance = input.any_just_pressed([KeyCode::KeyU]);
+    let remove_distance = input.any_just_pressed([KeyCode::KeyJ]);
 
-    let add_1000 = input.any_just_pressed([KeyCode::KeyU]);
-    let remove_1000 = input.any_just_pressed([KeyCode::KeyJ]);
-    let add_10000 = input.any_just_pressed([KeyCode::KeyI]);
-    let remove_10000 = input.any_just_pressed([KeyCode::KeyK]);
+    let add_1000 = input.any_just_pressed([KeyCode::KeyI]);
+    let remove_1000 = input.any_just_pressed([KeyCode::KeyK]);
+    let add_10000 = input.any_just_pressed([KeyCode::KeyO]);
+    let remove_10000 = input.any_just_pressed([KeyCode::KeyL]);
 
-    let mut change_seed = input.any_just_pressed([KeyCode::KeyT]);
+    let mut change_seed = input.any_just_pressed([KeyCode::KeyR]);
 
-    if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
+
+    if add_angle {
+        masterok.angle_mod +=0.0001;
+        change_seed = true;
+    }
+    if remove_angle {
+        masterok.angle_mod -=0.0001;
+        change_seed = true;
+    }
+
+ 
+/*
+
+  Line::from(format!("[T/G] Galaxy Angle Mod: {} ", masterok.angle_mod)),
+                Line::from(format!("[Y/H] Galaxy Radius Mod: {} ", masterok.radius_mod)),
+                Line::from(format!("[U/J] Galaxy Distance Mod: {} ", masterok.distance_mod)),
+
+   let add_arm = input.any_just_pressed([KeyCode::KeyO]);
+    let delete_arm = input.any_just_pressed([KeyCode::KeyL]);j
+
+ if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
         change_seed=true;}
     else    if delete_arm && (masterok.spiral_arm_count >1) {masterok.spiral_arm_count-=1;
             change_seed=true;}
+*/
+
+    
+
+
+
+   
 
     if add_1000 {
         ev_spawn_stars.send(SpawnStars(1000));
@@ -240,15 +270,27 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from("[Q/E] - Zoom Out/In"),
                 Line::from(" "),
                 Line::from(format!("Seed: {} ", masterok.gen_seed)),
-                Line::from("[T] - Change Seed"),
+                Line::from("[R] - Change Seed"),
                 Line::from(" "),
                 Line::from(format!("Stars: {} ", masterok.total_stars + 20000)), //adding 20000 here because I spawn 20000 stars to act as the backdrop of the galaxy
-                Line::from("[U/J] - Add/Delete 1000 Stars"),
-                Line::from("[I/K] - Add/Remove 10000 Stars"),
+                Line::from("[I/K] - Add/Delete 1000 Stars"),
+                Line::from("[O/L] - Add/Remove 10000 Stars"),
                 Line::from(" "),
                 Line::from(format!("Spiral Arms: {} ", masterok.spiral_arm_count)),
-                Line::from("[O/L] - Add/Remove Spiral Arm"),
+                Line::from("[O/L]TODOOO - Add/Remove Spiral Arm"),
                 Line::from(" "),
+                Line::from("Increase / Decrease"),
+                Line::from(" "),
+         
+                Line::from(format!("[T/G] Galaxy Angle Mod: {} ", masterok.angle_mod)),
+                Line::from(format!("[Y/H] Galaxy Radius Mod: {} ", masterok.radius_mod)),
+                Line::from(format!("[U/J] Galaxy Distance Mod: {} ", masterok.distance_mod)),
+                Line::from(" "),
+
+
+
+
+
                 Line::from("Toggle Star Types in Galaxy"),
                 Line::from(" "),
                 Line::from("[Z] - O-Class (Blue Giant)").style(if masterok.o_class {
@@ -305,14 +347,14 @@ fn generate_star_positions_in_range(
     star_data: &StarData,
 ) {
     for boop in start..end {
-        let random_angle: f32 = masterok.rng.gen_range(0.0..0.0003);
+        let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod*2.0));
        
-        let mut angle = (boop as f32 +masterok.initial_angle) * (0.0002 + random_angle) ;
+        let mut angle = (boop as f32 ) * (0.0002 + random_angle) ;
     
-        let random_radius: f32 = masterok.rng.gen_range(2.0..90.0);
-        let radius = (90.0 + random_radius) * angle;
-        let mut xik = radius * angle.cos() * 100.0;
-        let mut yik = radius * angle.sin() * 100.0;
+        let random_radius: f32 = masterok.rng.gen_range(2.0..(masterok.radius_mod*2.0));
+        let radius = (masterok.radius_mod+ random_radius) * angle;
+        let mut xik = radius * angle.cos() * masterok.distance_mod;
+        let mut yik = radius * angle.sin() * masterok.distance_mod;
 
         // Create a small RNG and add randomness
 
@@ -337,8 +379,9 @@ fn generate_star_positions_in_range(
             70.0
         };
 
-        let random_radius = masterok.rng.gen_range(0..50);
-        spawning_radius += random_radius as f32;
+       
+
+      //  spawning_radius += random_radius as f32;
 
         let rand_range = 5000.0 as f32;
 
