@@ -122,13 +122,37 @@ fn keyboard_input_system(
         let remove_10000 = input.any_just_pressed([KeyCode::KeyL]);
     
         let mut change_seed = input.any_just_pressed([KeyCode::KeyR]);
-    
-        if add_angle {
-            masterok.angle_mod += 0.0001;
+        let  reset_to_default = input.any_just_pressed([KeyCode::KeyF]);
+
+        if reset_to_default {
+            *masterok = Masterik::default();
             change_seed = true;
         }
-        if remove_angle {
-            masterok.angle_mod -= 0.0001;
+    
+        if add_angle {
+
+            masterok.angle_mod += 0.00011;
+            change_seed = true;
+        }
+        if remove_angle && (masterok.angle_mod >0.00006){
+            masterok.angle_mod -= 0.00005;
+            change_seed = true;
+        }
+        if add_radius {
+            masterok.radius_mod += 30.0;
+            change_seed = true;
+        }
+        if remove_radius && (masterok.radius_mod >30.0){
+            masterok.radius_mod -= 20.0;
+            change_seed = true;
+        }
+
+        if add_distance {
+            masterok.distance_mod += 30.0;
+            change_seed = true;
+        }
+        if remove_distance && (masterok.distance_mod >30.0){
+            masterok.distance_mod -= 20.0;
             change_seed = true;
         }
     
@@ -266,6 +290,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from(" "),
                 Line::from(format!("Seed: {} ", masterok.gen_seed)),
                 Line::from("[R] - Change Seed"),
+                Line::from("[F] - Default Settings"),
                 Line::from(" "),
                 Line::from(format!("Stars: {} ", masterok.total_stars + 20000)), //adding 20000 here because I spawn 20000 stars to act as the backdrop of the galaxy
                 Line::from("[I/K] - Add/Delete 1000 Stars"),
@@ -460,7 +485,7 @@ fn spawn_initial_stars(
             ));
         }
 
-        for randomczik in 1..20000 {
+        for randomczik in 1..10000 {
             // initial_counter += 1;
 
             let spawning_radius: f32 = masterok.rng.gen_range(10.0..60.0);
@@ -619,13 +644,29 @@ fn star_remover(
     //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
 
     for ev in ev_stars_remove.read() {
+        let previous_value = ev.0;
+
         let new_value = (masterok.total_stars);
 
-        for (entity, sc) in query.iter() {
-            if sc.0 > new_value {
-                commands.entity(entity).despawn();
+        let amount_remove = previous_value-new_value;
+
+        if amount_remove > 0 {
+
+            for counter in 1..amount_remove {
+                masterok.positions.pop();
             }
+
+
+            for (entity, sc) in query.iter() {
+                if sc.0 > new_value {
+                    commands.entity(entity).despawn();
+                }
+            }
+
+
         }
+
+       
     }
 }
 
