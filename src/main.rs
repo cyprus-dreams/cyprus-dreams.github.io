@@ -22,7 +22,7 @@ use ratatui::{
     text::Text,
     widgets::{Block, Borders, Paragraph, Wrap, *},
 };
-
+use bevy::asset::embedded_asset;
 use bevy::diagnostic::DiagnosticsStore;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 
@@ -60,6 +60,9 @@ fn main() {
         .add_event::<StarsRemoved>()
         .add_event::<ChangeSeed>()
         .add_event::<RespawnStars>();
+
+        embedded_asset!(app, "star.png");
+
     app.run();
         
 }
@@ -474,6 +477,13 @@ fn spawn_initial_stars(
         );
 
         let mut initial_counter = 0;
+        let crate_name = "spiral_galaxy";
+
+        let path = std::path::Path::new(crate_name).join("star.png");
+        let source = bevy::asset::io::AssetSourceId::from("embedded");
+        let asset_path = bevy::asset::AssetPath::from_path(&path).with_source(source);
+    
+        let star: Handle<Image> = asset_server.load(asset_path);
 
         for (x, y, radius) in &masterok.positions {
             initial_counter += 1;
@@ -494,14 +504,19 @@ fn spawn_initial_stars(
                 Color::rgb_u8(254, 70, 70)
             };
 
-            commands.spawn((
-                MaterialMesh2dBundle {
-                    mesh: meshes.add(Circle::new(radius.clone())).into(),
-                    // 4. Put something bright in a dark environment to see the effect
-                    material: materials.add(star_color),
-                    transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+            
+
+            commands.spawn((SpriteBundle {
+                texture: star.clone(),
+                transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+                sprite: Sprite {
+                    color: star_color, // 4. Put something bright in a dark environment to see the effect
+                    custom_size: Some(Vec2::splat(radius.clone() *2.0)),
                     ..default()
                 },
+                ..default()
+            },
+               
                 StarCount(initial_counter),
             ));
         }
@@ -551,15 +566,14 @@ fn spawn_initial_stars(
                     .push((random_offset_x, random_offset_y, radius));
 
                 commands.spawn((
-                    MaterialMesh2dBundle {
-                        mesh: meshes.add(Circle::new(radius.clone())).into(),
-                        // 4. Put something bright in a dark environment to see the effect
-                        material: materials.add(star_color),
-                        transform: Transform::from_translation(Vec3::new(
-                            random_offset_x,
-                            random_offset_y,
-                            0.,
-                        )),
+                    SpriteBundle {
+                        texture: star.clone(),
+                        transform: Transform::from_translation(Vec3::new(random_offset_x.clone(), random_offset_y.clone(), 0.)),
+                        sprite: Sprite {
+                            color: star_color, // 4. Put something bright in a dark environment to see the effect
+                            custom_size: Some(Vec2::splat(radius.clone() *2.0)),
+                            ..default()
+                        },
                         ..default()
                     },
                     StarCount(11),
@@ -604,6 +618,7 @@ fn star_adder(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
 
@@ -618,6 +633,14 @@ fn star_adder(
             generate_star_positions_in_range(previous_value, new_value, &mut masterok, &star_data);
 
             let mut positions_clone = masterok.positions.clone();
+
+            let crate_name = "spiral_galaxy";
+
+            let path = std::path::Path::new(crate_name).join("star.png");
+            let source = bevy::asset::io::AssetSourceId::from("embedded");
+            let asset_path = bevy::asset::AssetPath::from_path(&path).with_source(source);
+        
+            let star: Handle<Image> = asset_server.load(asset_path);
 
             for new_star in 0..amount_added {
                 let (x, y, radius) = positions_clone.pop().unwrap_or((0.0, 0.0, 0.0));
@@ -639,11 +662,14 @@ fn star_adder(
                 };
 
                 commands.spawn((
-                    MaterialMesh2dBundle {
-                        mesh: meshes.add(Circle::new(radius.clone())).into(),
-                        // 4. Put something bright in a dark environment to see the effect
-                        material: materials.add(star_color),
+                    SpriteBundle {
+                        texture: star.clone(),
                         transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+                        sprite: Sprite {
+                            color: star_color, // 4. Put something bright in a dark environment to see the effect
+                            custom_size: Some(Vec2::splat(radius.clone() *2.0)),
+                            ..default()
+                        },
                         ..default()
                     },
                     StarCount(previous_value + new_star),
