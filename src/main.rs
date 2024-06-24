@@ -1,6 +1,7 @@
 //! Illustrates bloom post-processing in 2d.
 
 use bevy::ecs::system::RunSystemOnce;
+use bevy::render::render_resource::Texture;
 use bevy::{
     core_pipeline::{
         bloom::{BloomCompositeMode, BloomSettings},
@@ -37,7 +38,8 @@ use resources::{
 };
 
 fn main() {
-    App::new()
+   let mut app = App::new();
+   app
         .add_plugins(DefaultPlugins)
         .add_plugins(EguiPlugin)
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
@@ -57,11 +59,12 @@ fn main() {
         .add_event::<StarsAdded>()
         .add_event::<StarsRemoved>()
         .add_event::<ChangeSeed>()
-        .add_event::<RespawnStars>()
-        .run();
+        .add_event::<RespawnStars>();
+    app.run();
+        
 }
 
-fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>) {
+fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,server: Res<AssetServer>, mut masterok: ResMut<Masterik>, ) {
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
@@ -79,6 +82,7 @@ fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>) {
         },
         BloomSettings::default(), // 3. Enable bloom for the camera
     ));
+ 
     ev_respawn.send(RespawnStars);
 }
 
@@ -279,7 +283,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
             let area = frame.size();
 
             let mut lines = (Text::from(vec![
-                Line::from(format!("FPS: {} ", fps)),
+                Line::from(format!("FPS: {} ", fps as i64)),
                 Line::from(" "),
                 Line::from("[WASD] - Move Camera "),
                 Line::from("[Q/E] - Zoom Out/In"),
