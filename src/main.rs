@@ -25,7 +25,7 @@ use ratatui::{
 use bevy::asset::embedded_asset;
 use bevy::diagnostic::DiagnosticsStore;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
-
+use bevy::core_pipeline::bloom::BloomPrefilterSettings;
 use web_time::Instant;
 
 use rand::rngs::SmallRng;
@@ -68,6 +68,18 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,server: Res<AssetServer>, mut masterok: ResMut<Masterik>, ) {
+
+    let bloom_set = BloomSettings {
+        intensity: 0.75,
+        low_frequency_boost: 0.7,
+        low_frequency_boost_curvature: 0.95,
+        high_pass_frequency: 1.0,
+        prefilter_settings: BloomPrefilterSettings {
+            threshold: 0.0,
+            threshold_softness: 0.0,
+        },
+        composite_mode: BloomCompositeMode::EnergyConserving,
+    };
     commands.spawn((
         Camera2dBundle {
             camera: Camera {
@@ -83,7 +95,7 @@ fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,serve
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
             ..default()
         },
-        BloomSettings::default(), // 3. Enable bloom for the camera
+        bloom_set, // 3. Enable bloom for the camera
     ));
  
     ev_respawn.send(RespawnStars);
