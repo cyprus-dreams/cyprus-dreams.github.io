@@ -1,23 +1,16 @@
 use bevy::{
-    core_pipeline::{
-        bloom::{BloomCompositeMode, BloomSettings},
-        tonemapping::Tonemapping,
-    },
+    
     prelude::*,
-    sprite::MaterialMesh2dBundle,
+    
 };
-use bevy_egui::{
-    egui::{self, Frame},
-    EguiContexts, EguiPlugin,
-};
-use egui::{FontData, FontDefinitions, FontFamily};
+
+
 use egui_ratatui::RataguiBackend;
 use rand::rngs::SmallRng;
 use ratatui::{
-    layout::Rect,
-    prelude::{Line, Span, Stylize, Terminal},
-    text::Text,
-    widgets::{Block, Borders, Paragraph, Wrap, *},
+   
+    prelude::{ Terminal},
+ 
 };
 use web_time::{Instant, SystemTime};
 
@@ -97,9 +90,9 @@ impl Default for Masterik {
             g_class: true,
             k_class: true,
             m_class: true,
-            angle_mod: 0.0002,
-            radius_mod: 2000.0,
-            distance_mod: 50.0,
+            angle_mod: 0.00016,
+            radius_mod: 2200.0,
+            distance_mod: 70.0,
             block_input: false,
 
             positions: Vec::new(),
