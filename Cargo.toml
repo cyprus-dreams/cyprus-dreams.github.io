@@ -4,11 +4,13 @@ version = "0.1.0"
 authors = ["Your Name <your.email@example.com>"]
 edition = "2021"
 
+
+
 [dependencies]
 bevy = "0.13.2"
 
 
-bevy_egui = "0.27.0"
+bevy_egui = { version = "0.27.0", default-features = false, features = ["render"] }
 
 ratatui = { version = "0.26.2", default-features = false }
 egui_ratatui = {version = "0.0.9"}
