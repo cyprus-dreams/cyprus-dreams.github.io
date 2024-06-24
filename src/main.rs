@@ -5,6 +5,7 @@ use bevy::core_pipeline::bloom::BloomPrefilterSettings;
 use bevy::diagnostic::DiagnosticsStore;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 
+use bevy::window::WindowMode;
 use bevy::{
     core_pipeline::{
         bloom::{BloomCompositeMode, BloomSettings},
@@ -40,12 +41,18 @@ fn main() {
                 primary_window: Some(Window {
                     title: "I am a window!".into(),
                     name: Some("bevy.app".into()),
-                    resolution: (1280., 720.).into(),
+               //     resolution: (1280., 720.).into(),
                     present_mode: PresentMode::AutoVsync,
                     // Tells wasm not to override default event handling, like F5, Ctrl+R etc.
                     prevent_default_event_handling: false,
                     window_theme: Some(WindowTheme::Dark),
-                    canvas: Some(String::from("kosmos")),
+                    canvas: Some(String::from("#kosmos")),
+                    mode: WindowMode::SizedFullscreen,
+                    resizable:true,
+                    focused:true,
+
+
+
                   
             
                     ..default()
