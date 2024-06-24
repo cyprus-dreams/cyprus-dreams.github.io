@@ -87,9 +87,9 @@ fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,serve
                 ..default()
             },
             projection: OrthographicProjection {
-                far: 1000.0,
-                near: -1000.0,
-                scale: 250.0,
+                far: 3000.0,
+                near: -3000.0,
+                scale: 900.0,
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended

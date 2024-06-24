@@ -65,7 +65,7 @@ pub struct Masterik {
 
 impl Masterik {
     pub fn partial_reset(&mut self) {
-        self.total_stars = 11000;
+        self.total_stars = 40000;
         self.gen_seed = self.rng.gen_range(1000..9000000000);
         self.rng = SmallRng::seed_from_u64(self.gen_seed);
 
@@ -85,7 +85,7 @@ impl Default for Masterik {
         let real = SmallRng::seed_from_u64(beep);
 
         Self {
-            total_stars: 30000,
+            total_stars: 40000,
             rng: real,
             gen_seed: beep,
             spiral_arm_count: 2,
