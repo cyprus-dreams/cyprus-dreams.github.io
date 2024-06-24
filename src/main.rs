@@ -26,7 +26,8 @@ use ratatui::{
 };
 
 use rand::{Rng, SeedableRng};
-
+use bevy::window::PresentMode;
+use bevy::window::WindowTheme;
 mod resources;
 use resources::{
     BevyTerminal, ChangeSeed, Masterik, PositionsVec, RespawnStars, SpawnStars, StarCount,
@@ -35,7 +36,22 @@ use resources::{
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+    app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()).set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "I am a window!".into(),
+                    name: Some("bevy.app".into()),
+                    resolution: (1280., 720.).into(),
+                    present_mode: PresentMode::AutoVsync,
+                    // Tells wasm not to override default event handling, like F5, Ctrl+R etc.
+                    prevent_default_event_handling: false,
+                    window_theme: Some(WindowTheme::Dark),
+                    canvas: Some(String::from("#kosmos")),
+                  
+            
+                    ..default()
+                }),
+                ..default()
+            }))
         .add_plugins(EguiPlugin)
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .init_resource::<Masterik>()
