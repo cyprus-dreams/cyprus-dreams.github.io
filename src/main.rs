@@ -70,7 +70,7 @@ fn main() {
 fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,server: Res<AssetServer>, mut masterok: ResMut<Masterik>, ) {
 
     let bloom_set = BloomSettings {
-        intensity: 0.95,
+        intensity: 0.7,
         low_frequency_boost: 0.9,
         low_frequency_boost_curvature: 0.95,
         high_pass_frequency: 1.0,
@@ -158,20 +158,20 @@ fn keyboard_input_system(
             change_seed = true;
         }
         if add_radius {
-            masterok.radius_mod += 30.0;
+            masterok.radius_mod += 50.0;
             change_seed = true;
         }
         if remove_radius && (masterok.radius_mod >30.0){
-            masterok.radius_mod -= 20.0;
+            masterok.radius_mod -= 50.0;
             change_seed = true;
         }
 
         if add_distance {
-            masterok.distance_mod += 30.0;
+            masterok.distance_mod += 10.0;
             change_seed = true;
         }
-        if remove_distance && (masterok.distance_mod >30.0){
-            masterok.distance_mod -= 20.0;
+        if remove_distance && (masterok.distance_mod >20.0){
+            masterok.distance_mod -= 10.0;
             change_seed = true;
         }
     
@@ -307,7 +307,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from("[R] - Change Seed"),
                 Line::from("[F] - Default Settings"),
                 Line::from(" "),
-                Line::from(format!("Stars: {} ", masterok.total_stars + 10000)), //adding 10000 here because I spawn 10000 stars to act as the backdrop of the galaxy
+                Line::from(format!("Stars: {} ", masterok.total_stars + 30000)), //adding 30000 here because I spawn 30000 stars to act as the backdrop of the galaxy
                 Line::from("[I/K] - Add/Delete 1000 Stars"),
                 Line::from("[O/L] - Add/Remove 10000 Stars"),
                 Line::from(" "),
@@ -462,6 +462,29 @@ fn generate_star_positions_in_range(
     }
 }
 
+
+fn star_color_from_radius(radius:&f32 , star_data: &StarData) ->Color {
+
+    let test_radius = radius +10.0;
+
+     if test_radius > star_data.b_class_radius {
+        Color::rgb_u8(10, 39, 240)
+    } else if test_radius > star_data.a_class_radius {
+        Color::rgb_u8(30, 70, 240)
+    } else if test_radius > star_data.f_class_radius {
+        Color::rgb_u8(248, 254, 90)
+    } else if test_radius > star_data.g_class_radius {
+        Color::rgb_u8(247, 254, 144)
+    } else if test_radius > star_data.k_class_radius {
+        Color::rgb_u8(254, 170, 52)
+    } else {
+        Color::rgb_u8(254, 15, 10)
+    }
+
+
+
+}
+
 fn spawn_initial_stars(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -498,19 +521,7 @@ fn spawn_initial_stars(
             let radius = radius.clone();
             let test_radius = radius +10.0;
 
-            let star_color = if test_radius > star_data.b_class_radius {
-                Color::rgb_u8(159, 162, 222)
-            } else if test_radius > star_data.a_class_radius {
-                Color::rgb_u8(240, 240, 254)
-            } else if test_radius > star_data.f_class_radius {
-                Color::rgb_u8(248, 254, 252)
-            } else if test_radius > star_data.g_class_radius {
-                Color::rgb_u8(247, 254, 144)
-            } else if test_radius > star_data.k_class_radius {
-                Color::rgb_u8(254, 170, 52)
-            } else {
-                Color::rgb_u8(254, 70, 70)
-            };
+            let star_color = star_color_from_radius(&test_radius, &star_data);
 
             
 
@@ -543,19 +554,7 @@ fn spawn_initial_stars(
             let radius = spawning_radius.clone();
             let test_radius = radius +10.0;
 
-            let star_color = if test_radius > star_data.b_class_radius {
-                Color::rgb_u8(159, 162, 222)
-            } else if test_radius > star_data.a_class_radius {
-                Color::rgb_u8(240, 240, 254)
-            } else if test_radius > star_data.f_class_radius {
-                Color::rgb_u8(248, 254, 252)
-            } else if test_radius > star_data.g_class_radius {
-                Color::rgb_u8(247, 254, 144)
-            } else if test_radius > star_data.k_class_radius {
-                Color::rgb_u8(254, 170, 52)
-            } else {
-                Color::rgb_u8(254, 70, 70)
-            };
+            let star_color = star_color_from_radius(&test_radius, &star_data);
 
             // Ensure the new circle does not overlap with any existing circles
             let mut attempts = 0;
@@ -660,19 +659,7 @@ fn star_adder(
                 let radius = radius.clone();
                 let test_radius = radius +10.0;
     
-                let star_color = if test_radius > star_data.b_class_radius {
-                    Color::rgb_u8(159, 162, 222)
-                } else if test_radius > star_data.a_class_radius {
-                    Color::rgb_u8(240, 240, 254)
-                } else if test_radius > star_data.f_class_radius {
-                    Color::rgb_u8(248, 254, 252)
-                } else if test_radius > star_data.g_class_radius {
-                    Color::rgb_u8(247, 254, 144)
-                } else if test_radius > star_data.k_class_radius {
-                    Color::rgb_u8(254, 170, 52)
-                } else {
-                    Color::rgb_u8(254, 70, 70)
-                };
+                let star_color = star_color_from_radius(&test_radius, &star_data);
 
                 commands.spawn((
                     SpriteBundle {

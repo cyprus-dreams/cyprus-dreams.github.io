@@ -85,7 +85,7 @@ impl Default for Masterik {
         let real = SmallRng::seed_from_u64(beep);
 
         Self {
-            total_stars: 11000,
+            total_stars: 30000,
             rng: real,
             gen_seed: beep,
             spiral_arm_count: 2,
@@ -99,7 +99,7 @@ impl Default for Masterik {
             m_class: true,
             angle_mod: 0.0002,
             radius_mod: 2000.0,
-            distance_mod: 100.0,
+            distance_mod: 50.0,
             block_input: false,
 
             positions: Vec::new(),
