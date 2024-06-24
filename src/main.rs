@@ -158,8 +158,8 @@ fn keyboard_input_system(
     
    
     
-           let add_arm = input.any_just_pressed([KeyCode::BracketRight]);
-            let delete_arm = input.any_just_pressed([KeyCode::BracketLeft]);
+           let add_arm = input.any_just_pressed([KeyCode::KeyP]);
+            let delete_arm = input.any_just_pressed([KeyCode::Semicolon]);
     
          if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
                 change_seed=true;}
@@ -293,7 +293,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from("[O/L] - Add/Remove 10000 Stars"),
                 Line::from(" "),
                 Line::from(format!("Spiral Arms: {} ", masterok.spiral_arm_count)),
-                Line::from("[[/]] - Add/Remove Spiral Arm"),
+                Line::from("[P/;] - Add/Remove Spiral Arm"),
                 Line::from(" "),
                 Line::from("Increase / Decrease"),
                 Line::from(" "),
@@ -359,7 +359,9 @@ fn generate_star_positions_in_range(
     masterok: &mut Masterik,
     star_data: &StarData,
 ) {
-    for boop in start..end {
+    for mut boop in start..end {
+
+        boop = boop/masterok.spiral_arm_count;
         let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod ));
 
         let mut angle = (boop as f32) * (0.0002 + random_angle);
@@ -404,6 +406,11 @@ fn generate_star_positions_in_range(
         yik += random_offset_y;
 
 
+        if (boop % 5 == 0) && masterok.spiral_arm_count > 3 {
+            let holder = yik.clone();
+            yik = xik;
+            xik = -holder;
+        }
         if (boop % 3 == 0) && masterok.spiral_arm_count > 2 {
             let holder = xik.clone();
             xik = yik;
@@ -498,7 +505,7 @@ fn spawn_initial_stars(
         for randomczik in 1..10000 {
             // initial_counter += 1;
 
-            let spawning_radius: f32 = masterok.rng.gen_range(10.0..60.0);
+            let spawning_radius: f32 = masterok.rng.gen_range(10.0..90.0);
             let radius = spawning_radius.clone();
 
             let rand_range = randomczik as f32 * 30.0;
