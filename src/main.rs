@@ -40,7 +40,7 @@ use resources::{
 fn main() {
    let mut app = App::new();
    app
-        .add_plugins(DefaultPlugins)
+   .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(EguiPlugin)
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .init_resource::<Masterik>()
