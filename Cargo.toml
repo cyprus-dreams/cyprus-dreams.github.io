@@ -13,7 +13,7 @@ bevy_egui = "0.27.0"
 ratatui = { version = "0.26.2", default-features = false }
 egui_ratatui = {version = "0.0.9"}
 egui = "0.27.2"
-rand = { version = "0.8.5", features = ["small_rng"] }
+rand = { version = "0.8.5", default-features = false, features = ["small_rng"] }
 
 web-time = {version = "1" }
 

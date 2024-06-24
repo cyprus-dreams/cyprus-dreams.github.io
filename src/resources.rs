@@ -1,17 +1,8 @@
-use bevy::{
-    
-    prelude::*,
-    
-};
-
+use bevy::prelude::*;
 
 use egui_ratatui::RataguiBackend;
 use rand::rngs::SmallRng;
-use ratatui::{
-   
-    prelude::{ Terminal},
- 
-};
+use ratatui::prelude::Terminal;
 use web_time::{Instant, SystemTime};
 
 use rand::{Rng, SeedableRng};
@@ -35,6 +26,7 @@ impl Default for BevyTerminal<RataguiBackend> {
     }
 }
 
+//master state structure
 #[derive(Resource)]
 pub struct Masterik {
     pub total_stars: i64,
@@ -56,9 +48,10 @@ pub struct Masterik {
     pub block_input: bool,
 }
 
+//run when changing seeds to preserve other settings
 impl Masterik {
     pub fn partial_reset(&mut self) {
-        self.total_stars = 40000;
+        self.total_stars = 30000;
         self.gen_seed = self.rng.gen_range(1000..9000000000);
         self.rng = SmallRng::seed_from_u64(self.gen_seed);
 
@@ -72,15 +65,15 @@ impl Default for Masterik {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        let mut lol = SmallRng::seed_from_u64(ts.clone());
-        let beep: u64 = lol.gen_range(1000..9000000000);
+        let mut rng = SmallRng::seed_from_u64(ts.clone());
+        let seed: u64 = rng.gen_range(1000..9000000000);
 
-        let real = SmallRng::seed_from_u64(beep);
+        let real_rng = SmallRng::seed_from_u64(seed);
 
         Self {
-            total_stars: 40000,
-            rng: real,
-            gen_seed: beep,
+            total_stars: 30000,
+            rng: real_rng,
+            gen_seed: seed,
             spiral_arm_count: 2,
             camera_move_speed: 10.0,
             o_class: true,
@@ -90,9 +83,9 @@ impl Default for Masterik {
             g_class: true,
             k_class: true,
             m_class: true,
-            angle_mod: 0.00016,
+            angle_mod: 0.00076,
             radius_mod: 2200.0,
-            distance_mod: 70.0,
+            distance_mod: 60.0,
             block_input: false,
 
             positions: Vec::new(),
@@ -149,12 +142,12 @@ pub struct StarsRemoved(pub i64); //contains the previous amount of stars
 pub struct StarsAdded(pub i64); //contains the previous amount of stars
 
 #[derive(Event)]
-pub struct ChangeSeed; //contains the previous amount of stars
+pub struct ChangeSeed;
 
 #[derive(Event)]
-pub struct RespawnStars; //contains the previous amount of stars
+pub struct RespawnStars;
 
 #[derive(Component)]
-pub struct StarCount(pub i64);
+pub struct StarCount(pub i64); // component that gets added to stars, remembers the order in which it was spawned
 
 pub type PositionsVec = Vec<(f32, f32, f32)>; // x y radius

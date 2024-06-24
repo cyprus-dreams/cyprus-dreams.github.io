@@ -11,7 +11,6 @@ use bevy::{
         tonemapping::Tonemapping,
     },
     prelude::*,
-   
 };
 use bevy_egui::{
     egui::{self, Frame},
@@ -69,7 +68,7 @@ fn setup(
     mut masterok: ResMut<Masterik>,
 ) {
     let bloom_set = BloomSettings {
-        intensity: 0.6,
+        intensity: 0.75,
         low_frequency_boost: 0.5,
         low_frequency_boost_curvature: 0.5,
         high_pass_frequency: 1.0,
@@ -88,7 +87,7 @@ fn setup(
             projection: OrthographicProjection {
                 far: 90000.0,
                 near: -90000.0,
-                scale: 900.0,
+                scale: 1400.0,
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface, // 2. Using a tonemapper that desaturates to white is recommended
@@ -244,11 +243,11 @@ fn keyboard_input_system(
 
         if char_q {
             // zoom out
-            projection.scale *= 1.25;
+            projection.scale *= 2.0;
         }
         if char_e {
             // zoom in
-            projection.scale /= 1.25;
+            projection.scale /= 2.0;
         }
 
         //block input during star spawning, reset positions and star count, send respawn event
@@ -312,7 +311,7 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from("[R] - Change Seed"),
                 Line::from("[F] - Default Settings"),
                 Line::from(" "),
-                Line::from(format!("Stars: {} ", masterok.total_stars + 30000)), //adding 30000 here because I spawn 30000 stars to act as the backdrop of the galaxy
+                Line::from(format!("Stars: {} ", masterok.total_stars + 20000)), //adding 30000 here because I spawn 30000 stars to act as the backdrop of the galaxy
                 Line::from("[I/K] - Add/Delete 1000 Stars"),
                 Line::from("[O/L] - Add/Remove 10000 Stars"),
                 Line::from(" "),
@@ -386,7 +385,7 @@ fn generate_star_positions_in_range(
     let rand_range = 20000.0 as f32;
     for mut star_index in start..end {
         //this keeps stars closer to center when spawning more stars, since the spawning alternates arms
-        star_index = star_index / (masterok.spiral_arm_count );
+        star_index = star_index / (masterok.spiral_arm_count);
         //randomness to make it look natural
         let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod));
 
@@ -417,22 +416,18 @@ fn generate_star_positions_in_range(
             70.0
         };
 
-    
-
-       
-
         let random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
         let random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
 
         xik += random_offset_x;
         yik += random_offset_y;
 
+        //this creates the spiral arms
         if (star_index % 5 == 0) && masterok.spiral_arm_count > 3 {
             let holder = yik.clone();
             yik = xik;
             xik = -holder;
-        }
-        else if (star_index % 3 == 0) && masterok.spiral_arm_count > 2 {
+        } else if (star_index % 3 == 0) && masterok.spiral_arm_count > 2 {
             let holder = xik.clone();
             xik = yik;
             yik = -holder;
@@ -447,14 +442,14 @@ fn generate_star_positions_in_range(
             let dx = xik - px;
             let dy = yik - py;
             (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
-        }) && attempts < 60
+        }) && attempts < 20
         {
             xik += masterok.rng.gen_range(-50000.0..50000.0);
             yik += masterok.rng.gen_range(-50000.0..50000.0);
             attempts += 1;
         }
 
-        if attempts < 58 {
+        if attempts < 19 {
             // Store the new circle position
             masterok.positions.push((xik, yik, spawning_radius));
         }
@@ -485,11 +480,8 @@ fn spawn_initial_stars(
     mut masterok: ResMut<Masterik>,
     star_data: Res<StarData>,
     mut ev_respawn: EventReader<RespawnStars>,
-   
 ) {
     for _ in ev_respawn.read() {
- 
-
         generate_star_positions_in_range(
             1,
             masterok.total_stars.clone(),
@@ -498,7 +490,6 @@ fn spawn_initial_stars(
         );
 
         let mut initial_counter = 0;
-
 
         //this is for embedding assets
         let crate_name = "spiral_galaxy";
@@ -525,7 +516,7 @@ fn spawn_initial_stars(
                     texture: star.clone(),
                     transform: transform,
                     sprite: Sprite {
-                        color: star_color, 
+                        color: star_color,
                         custom_size: Some(Vec2::splat(radius.clone() * 2.0)),
                         ..default()
                     },
@@ -536,17 +527,20 @@ fn spawn_initial_stars(
         }
 
         //spawns stars that act as backdrop of the galaxy
-        for randomczik in 1..30000 {
+        for randomczik in 1..20000 {
             // initial_counter += 1;
 
-            let spawning_radius: f32 = masterok.rng.gen_range(10.0.. (star_data.k_class_radius+100.0));
+            let spawning_radius: f32 = masterok
+                .rng
+                .gen_range(10.0..(star_data.k_class_radius + 100.0));
 
-            let rand_range = randomczik as f32 * 30.0;
+            let rand_range = randomczik as f32 * 90.0;
 
             let mut random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
             let mut random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
 
             let radius = spawning_radius.clone();
+            //buffer radius for testing to avoid floating point errors
             let test_radius = radius + 10.0;
 
             let star_color = star_color_from_radius(&test_radius, &star_data);
@@ -570,13 +564,13 @@ fn spawn_initial_stars(
                     .positions
                     .push((random_offset_x, random_offset_y, radius));
 
-                    let mut transform = Transform::from_translation(Vec3::new(
-                        random_offset_x.clone(),
-                        random_offset_y.clone(),
-                        0.,
-                    ));
-                    //rotate stars a bit to make it look more natural
-                    transform.rotate_local_z(random_offset_x.clone());
+                let mut transform = Transform::from_translation(Vec3::new(
+                    random_offset_x.clone(),
+                    random_offset_y.clone(),
+                    0.,
+                ));
+                //rotate stars a bit to make it look more natural
+                transform.rotate_local_z(random_offset_x.clone());
 
                 commands.spawn((
                     SpriteBundle {
@@ -603,8 +597,6 @@ fn star_watcher(
     mut ev_stars_add: EventWriter<StarsAdded>,
     mut ev_stars_remove: EventWriter<StarsRemoved>,
 ) {
-    //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
-
     for ev in ev_spawn_stars.read() {
         let previous_value = masterok.total_stars.clone();
 
@@ -616,7 +608,9 @@ fn star_watcher(
             //removing stars
             if (ev.0 < 0) {
                 ev_stars_remove.send(StarsRemoved(previous_value));
-            } else {
+            } else
+            //adding stars
+            {
                 ev_stars_add.send(StarsAdded(previous_value));
             }
         }
@@ -628,12 +622,9 @@ fn star_adder(
     star_data: Res<StarData>,
     mut ev_stars_add: EventReader<StarsAdded>,
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+
     asset_server: Res<AssetServer>,
 ) {
-    //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
-
     for ev in ev_stars_add.read() {
         let previous_value = ev.0;
 
@@ -686,14 +677,12 @@ fn star_adder(
 
 fn star_remover(
     mut masterok: ResMut<Masterik>,
-    star_data: Res<StarData>,
+
     mut ev_stars_remove: EventReader<StarsRemoved>,
 
     mut commands: Commands,
     query: Query<(Entity, &StarCount)>,
 ) {
-    //cant naively respawn all stars because it crashes if trying to spawn too many entities at once
-
     for ev in ev_stars_remove.read() {
         let previous_value = ev.0;
 
@@ -702,7 +691,7 @@ fn star_remover(
         let amount_remove = previous_value - new_value;
 
         if amount_remove > 0 {
-            for counter in 1..amount_remove {
+            for _ in 1..amount_remove {
                 masterok.positions.pop();
             }
 
