@@ -360,14 +360,12 @@ fn generate_star_positions_in_range(
     star_data: &StarData,
 ) {
     for boop in start..end {
-        let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod * 2.0));
+        let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod ));
 
         let mut angle = (boop as f32) * (0.0002 + random_angle);
-        if (boop % 3 == 0) && masterok.spiral_arm_count > 2 {
-            angle+=0.002
-        }
+       
 
-        let random_radius: f32 = masterok.rng.gen_range(2.0..(masterok.radius_mod * 2.0));
+        let random_radius: f32 = masterok.rng.gen_range(2.0..(masterok.radius_mod ));
         let radius = (masterok.radius_mod + random_radius) * angle;
         let mut xik = radius * angle.cos() * masterok.distance_mod;
         let mut yik = radius * angle.sin() * masterok.distance_mod;
@@ -405,10 +403,23 @@ fn generate_star_positions_in_range(
         xik += random_offset_x;
         yik += random_offset_y;
 
+
+        if (boop % 3 == 0) && masterok.spiral_arm_count > 2 {
+            let holder = xik.clone();
+            xik = yik;
+            yik = -holder;
+        }else if (boop % 2 == 0) && masterok.spiral_arm_count > 1 {
+            
+            xik = -xik;
+            yik = -yik;
+        }
+
+       /*
         if (boop % 2 == 0) && masterok.spiral_arm_count > 1 {
             xik = -xik;
             yik = -yik;
         }
+        */
 
         // Ensure the new circle does not overlap with any existing circles
         let mut attempts = 0;
