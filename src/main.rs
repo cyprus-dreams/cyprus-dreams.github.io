@@ -46,7 +46,7 @@ fn main() {
         .init_resource::<Masterik>()
         .init_resource::<StarData>()
         .init_resource::<BevyTerminal<RataguiBackend>>()
-        .insert_resource(ClearColor(Color::rgb(0.05, 0.05, 0.05)))
+        .insert_resource(ClearColor(Color::rgb(0.01, 0.01, 0.01)))
         .add_systems(Startup, setup)
         .add_systems(PostUpdate, spawn_initial_stars)
         .add_systems(Update, keyboard_input_system)
@@ -70,15 +70,15 @@ fn main() {
 fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,server: Res<AssetServer>, mut masterok: ResMut<Masterik>, ) {
 
     let bloom_set = BloomSettings {
-        intensity: 0.7,
-        low_frequency_boost: 0.9,
-        low_frequency_boost_curvature: 0.95,
+        intensity: 0.6,
+        low_frequency_boost: 0.5,
+        low_frequency_boost_curvature: 0.5,
         high_pass_frequency: 1.0,
         prefilter_settings: BloomPrefilterSettings {
             threshold: 0.0,
             threshold_softness: 0.0,
         },
-        composite_mode: BloomCompositeMode::EnergyConserving,
+        composite_mode: BloomCompositeMode::Additive,
     };
     commands.spawn((
         Camera2dBundle {
@@ -87,8 +87,8 @@ fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,serve
                 ..default()
             },
             projection: OrthographicProjection {
-                far: 3000.0,
-                near: -3000.0,
+                far: 90000.0,
+                near: -90000.0,
                 scale: 900.0,
                 ..default()
             },
@@ -380,7 +380,7 @@ fn generate_star_positions_in_range(
 ) {
     for mut boop in start..end {
 
-        boop = boop/masterok.spiral_arm_count;
+        boop = boop/ (masterok.spiral_arm_count+2);
         let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod ));
 
         let mut angle = (boop as f32) * (0.0002 + random_angle);
@@ -472,7 +472,7 @@ fn star_color_from_radius(radius:&f32 , star_data: &StarData) ->Color {
     } else if test_radius > star_data.a_class_radius {
         Color::rgb_u8(30, 70, 240)
     } else if test_radius > star_data.f_class_radius {
-        Color::rgb_u8(248, 254, 90)
+        Color::rgb_u8(238, 254, 150)
     } else if test_radius > star_data.g_class_radius {
         Color::rgb_u8(247, 254, 144)
     } else if test_radius > star_data.k_class_radius {
@@ -525,9 +525,11 @@ fn spawn_initial_stars(
 
             
 
+            let mut transform =Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.));
+            transform.rotate_local_z(x.clone());
             commands.spawn((SpriteBundle {
                 texture: star.clone(),
-                transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+                transform: transform,
                 sprite: Sprite {
                     color: star_color, // 4. Put something bright in a dark environment to see the effect
                     custom_size: Some(Vec2::splat(radius.clone() * 2.0)),
@@ -661,10 +663,13 @@ fn star_adder(
     
                 let star_color = star_color_from_radius(&test_radius, &star_data);
 
+                let mut transform =Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.));
+                transform.rotate_local_z(x.clone());
+
                 commands.spawn((
                     SpriteBundle {
                         texture: star.clone(),
-                        transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
+                        transform: transform,
                         sprite: Sprite {
                             color: star_color, // 4. Put something bright in a dark environment to see the effect
                             custom_size: Some(Vec2::splat(radius.clone() * 2.0)),
