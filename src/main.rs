@@ -156,20 +156,16 @@ fn keyboard_input_system(
             change_seed = true;
         }
     
-        /*
+   
     
-          Line::from(format!("[T/G] Galaxy Angle Mod: {} ", masterok.angle_mod)),
-                        Line::from(format!("[Y/H] Galaxy Radius Mod: {} ", masterok.radius_mod)),
-                        Line::from(format!("[U/J] Galaxy Distance Mod: {} ", masterok.distance_mod)),
-    
-           let add_arm = input.any_just_pressed([KeyCode::KeyO]);
-            let delete_arm = input.any_just_pressed([KeyCode::KeyL]);j
+           let add_arm = input.any_just_pressed([KeyCode::BracketRight]);
+            let delete_arm = input.any_just_pressed([KeyCode::BracketLeft]);
     
          if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
                 change_seed=true;}
             else    if delete_arm && (masterok.spiral_arm_count >1) {masterok.spiral_arm_count-=1;
                     change_seed=true;}
-        */
+        
     
         if add_1000 {
             ev_spawn_stars.send(SpawnStars(1000));
@@ -292,12 +288,12 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from("[R] - Change Seed"),
                 Line::from("[F] - Default Settings"),
                 Line::from(" "),
-                Line::from(format!("Stars: {} ", masterok.total_stars + 20000)), //adding 20000 here because I spawn 20000 stars to act as the backdrop of the galaxy
+                Line::from(format!("Stars: {} ", masterok.total_stars + 10000)), //adding 10000 here because I spawn 10000 stars to act as the backdrop of the galaxy
                 Line::from("[I/K] - Add/Delete 1000 Stars"),
                 Line::from("[O/L] - Add/Remove 10000 Stars"),
                 Line::from(" "),
                 Line::from(format!("Spiral Arms: {} ", masterok.spiral_arm_count)),
-                Line::from("[O/L]TODOOO - Add/Remove Spiral Arm"),
+                Line::from("[[/]] - Add/Remove Spiral Arm"),
                 Line::from(" "),
                 Line::from("Increase / Decrease"),
                 Line::from(" "),
@@ -564,8 +560,7 @@ fn star_watcher(
 
         if (potential_value > 0) && (potential_value < 101000) {
             masterok.total_stars += ev.0;
-            println!("add stars {:?} ", ev.0);
-            println!("current stars {:?} ", masterok.total_stars);
+         
 
             //removing stars
             if (ev.0 < 0) {

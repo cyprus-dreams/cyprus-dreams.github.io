@@ -98,8 +98,8 @@ impl Default for Masterik {
             k_class: true,
             m_class: true,
             angle_mod: 0.0002,
-            radius_mod: 100.0,
-            distance_mod: 100.0,
+            radius_mod: 90.0,
+            distance_mod: 90.0,
             block_input: false,
 
             positions: Vec::new(),
