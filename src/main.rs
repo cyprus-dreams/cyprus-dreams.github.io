@@ -89,146 +89,140 @@ fn keyboard_input_system(
     mut ev_spawn_stars: EventWriter<SpawnStars>,
     mut ev_change_seed: EventWriter<ChangeSeed>,
 ) {
-    let (mut projection, mut transform) = query_camera.single_mut();
 
-    let char_up = input.any_pressed([KeyCode::KeyW]);
-    let char_down = input.any_pressed([KeyCode::KeyS]);
-    let char_left = input.any_pressed([KeyCode::KeyA]);
-    let char_right = input.any_pressed([KeyCode::KeyD]);
+    if !masterok.block_input {
+        let (mut projection, mut transform) = query_camera.single_mut();
 
-    let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
-    let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
-
-    let o_class = input.any_just_pressed([KeyCode::KeyZ]);
-    let b_class = input.any_just_pressed([KeyCode::KeyX]);
-    let a_class = input.any_just_pressed([KeyCode::KeyC]);
-    let f_class = input.any_just_pressed([KeyCode::KeyV]);
-    let g_class = input.any_just_pressed([KeyCode::KeyB]);
-    let k_class = input.any_just_pressed([KeyCode::KeyN]);
-    let m_class = input.any_just_pressed([KeyCode::KeyM]);
-
-
-    let add_angle = input.any_just_pressed([KeyCode::KeyT]);
-    let remove_angle = input.any_just_pressed([KeyCode::KeyG]);
-    let add_radius = input.any_just_pressed([KeyCode::KeyY]);
-    let remove_radius = input.any_just_pressed([KeyCode::KeyH]);
-    let add_distance = input.any_just_pressed([KeyCode::KeyU]);
-    let remove_distance = input.any_just_pressed([KeyCode::KeyJ]);
-
-    let add_1000 = input.any_just_pressed([KeyCode::KeyI]);
-    let remove_1000 = input.any_just_pressed([KeyCode::KeyK]);
-    let add_10000 = input.any_just_pressed([KeyCode::KeyO]);
-    let remove_10000 = input.any_just_pressed([KeyCode::KeyL]);
-
-    let mut change_seed = input.any_just_pressed([KeyCode::KeyR]);
-
-
-    if add_angle {
-        masterok.angle_mod +=0.0001;
-        change_seed = true;
-    }
-    if remove_angle {
-        masterok.angle_mod -=0.0001;
-        change_seed = true;
-    }
-
- 
-/*
-
-  Line::from(format!("[T/G] Galaxy Angle Mod: {} ", masterok.angle_mod)),
-                Line::from(format!("[Y/H] Galaxy Radius Mod: {} ", masterok.radius_mod)),
-                Line::from(format!("[U/J] Galaxy Distance Mod: {} ", masterok.distance_mod)),
-
-   let add_arm = input.any_just_pressed([KeyCode::KeyO]);
-    let delete_arm = input.any_just_pressed([KeyCode::KeyL]);j
-
- if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
-        change_seed=true;}
-    else    if delete_arm && (masterok.spiral_arm_count >1) {masterok.spiral_arm_count-=1;
-            change_seed=true;}
-*/
-
+        let char_up = input.any_pressed([KeyCode::KeyW]);
+        let char_down = input.any_pressed([KeyCode::KeyS]);
+        let char_left = input.any_pressed([KeyCode::KeyA]);
+        let char_right = input.any_pressed([KeyCode::KeyD]);
     
-
-
-
-   
-
-    if add_1000 {
-        ev_spawn_stars.send(SpawnStars(1000));
-    } else if remove_1000 {
-        ev_spawn_stars.send(SpawnStars(-1000));
-    } else if add_10000 {
-        ev_spawn_stars.send(SpawnStars(10000));
-    } else if remove_10000 {
-        ev_spawn_stars.send(SpawnStars(-10000));
-    } else {
-        ();
+        let char_q = input.any_just_pressed([KeyCode::KeyQ]); //zoom out
+        let char_e = input.any_just_pressed([KeyCode::KeyE]); //zoom in
+    
+        let o_class = input.any_just_pressed([KeyCode::KeyZ]);
+        let b_class = input.any_just_pressed([KeyCode::KeyX]);
+        let a_class = input.any_just_pressed([KeyCode::KeyC]);
+        let f_class = input.any_just_pressed([KeyCode::KeyV]);
+        let g_class = input.any_just_pressed([KeyCode::KeyB]);
+        let k_class = input.any_just_pressed([KeyCode::KeyN]);
+        let m_class = input.any_just_pressed([KeyCode::KeyM]);
+    
+        let add_angle = input.any_just_pressed([KeyCode::KeyT]);
+        let remove_angle = input.any_just_pressed([KeyCode::KeyG]);
+        let add_radius = input.any_just_pressed([KeyCode::KeyY]);
+        let remove_radius = input.any_just_pressed([KeyCode::KeyH]);
+        let add_distance = input.any_just_pressed([KeyCode::KeyU]);
+        let remove_distance = input.any_just_pressed([KeyCode::KeyJ]);
+    
+        let add_1000 = input.any_just_pressed([KeyCode::KeyI]);
+        let remove_1000 = input.any_just_pressed([KeyCode::KeyK]);
+        let add_10000 = input.any_just_pressed([KeyCode::KeyO]);
+        let remove_10000 = input.any_just_pressed([KeyCode::KeyL]);
+    
+        let mut change_seed = input.any_just_pressed([KeyCode::KeyR]);
+    
+        if add_angle {
+            masterok.angle_mod += 0.0001;
+            change_seed = true;
+        }
+        if remove_angle {
+            masterok.angle_mod -= 0.0001;
+            change_seed = true;
+        }
+    
+        /*
+    
+          Line::from(format!("[T/G] Galaxy Angle Mod: {} ", masterok.angle_mod)),
+                        Line::from(format!("[Y/H] Galaxy Radius Mod: {} ", masterok.radius_mod)),
+                        Line::from(format!("[U/J] Galaxy Distance Mod: {} ", masterok.distance_mod)),
+    
+           let add_arm = input.any_just_pressed([KeyCode::KeyO]);
+            let delete_arm = input.any_just_pressed([KeyCode::KeyL]);j
+    
+         if add_arm && (masterok.spiral_arm_count <4) {masterok.spiral_arm_count+=1;
+                change_seed=true;}
+            else    if delete_arm && (masterok.spiral_arm_count >1) {masterok.spiral_arm_count-=1;
+                    change_seed=true;}
+        */
+    
+        if add_1000 {
+            ev_spawn_stars.send(SpawnStars(1000));
+        } else if remove_1000 {
+            ev_spawn_stars.send(SpawnStars(-1000));
+        } else if add_10000 {
+            ev_spawn_stars.send(SpawnStars(10000));
+        } else if remove_10000 {
+            ev_spawn_stars.send(SpawnStars(-10000));
+        } else {
+            ();
+        }
+    
+        if o_class {
+            masterok.o_class = !masterok.o_class;
+            change_seed = true;
+        }
+        if b_class {
+            masterok.b_class = !masterok.b_class;
+            change_seed = true;
+        }
+        if a_class {
+            masterok.a_class = !masterok.a_class;
+            change_seed = true;
+        }
+        if f_class {
+            masterok.f_class = !masterok.f_class;
+            change_seed = true;
+        }
+        if g_class {
+            masterok.g_class = !masterok.g_class;
+            change_seed = true;
+        }
+        if k_class {
+            masterok.k_class = !masterok.k_class;
+            change_seed = true;
+        }
+        if m_class {
+            masterok.m_class = !masterok.m_class;
+            change_seed = true;
+        }
+    
+        if char_up {
+            transform.translation.y += (masterok.camera_move_speed * projection.scale);
+        }
+        if char_down {
+            transform.translation.y -= (masterok.camera_move_speed * projection.scale);
+        }
+        if char_left {
+            transform.translation.x -= (masterok.camera_move_speed * projection.scale);
+        }
+        if char_right {
+            transform.translation.x += (masterok.camera_move_speed * projection.scale);
+        }
+    
+        if char_q {
+            // zoom out
+            projection.scale *= 1.25;
+        }
+        if char_e {
+            // zoom in
+            projection.scale /= 1.25;
+        }
+    
+        if change_seed {
+            masterok.block_input = true;
+            masterok.partial_reset();
+            ev_change_seed.send(ChangeSeed);
+        }
+    
+        let char_backspace = input.any_pressed([KeyCode::Backspace, KeyCode::Delete]);
+    
+        if char_backspace {
+            panic!("BYE");
+        }
     }
 
-    if o_class {
-        masterok.o_class = !masterok.o_class;
-        change_seed = true;
-    }
-    if b_class {
-        masterok.b_class = !masterok.b_class;
-        change_seed = true;
-    }
-    if a_class {
-        masterok.a_class = !masterok.a_class;
-        change_seed = true;
-    }
-    if f_class {
-        masterok.f_class = !masterok.f_class;
-        change_seed = true;
-    }
-    if g_class {
-        masterok.g_class = !masterok.g_class;
-        change_seed = true;
-    }
-    if k_class {
-        masterok.k_class = !masterok.k_class;
-        change_seed = true;
-    }
-    if m_class {
-        masterok.m_class = !masterok.m_class;
-        change_seed = true;
-    }
-
-    if char_up {
-        transform.translation.y += (masterok.camera_move_speed * projection.scale);
-    }
-    if char_down {
-        transform.translation.y -= (masterok.camera_move_speed * projection.scale);
-    }
-    if char_left {
-        transform.translation.x -= (masterok.camera_move_speed * projection.scale);
-    }
-    if char_right {
-        transform.translation.x += (masterok.camera_move_speed * projection.scale);
-    }
-
-    if char_q {
-        // zoom out
-        projection.scale *= 1.25;
-    }
-    if char_e {
-        // zoom in
-        projection.scale /= 1.25;
-    }
-
-    if change_seed {
-        
-        masterok.partial_reset();
-        ev_change_seed.send(ChangeSeed);
-        
-    }
-
-    let char_backspace = input.any_pressed([KeyCode::Backspace, KeyCode::Delete]);
-
-    if char_backspace {
-        panic!("BYE");
-    }
 }
 
 // Render to the terminal and to egui , both are immediate mode
@@ -239,10 +233,11 @@ fn ui_example_system(
     diagnostics: Res<DiagnosticsStore>,
 ) {
     let fps = diagnostics
-            .get(&FrameTimeDiagnosticsPlugin::FPS)
-            .and_then(|fps| fps.smoothed()).unwrap_or(60.0);
-        
-    draw_info_menu(&mut termres.terminal_info, &masterok, fps );
+        .get(&FrameTimeDiagnosticsPlugin::FPS)
+        .and_then(|fps| fps.smoothed())
+        .unwrap_or(60.0);
+
+    draw_info_menu(&mut termres.terminal_info, &masterok, fps);
 
     let mut frame = egui::Frame::default()
         .inner_margin(1.0)
@@ -258,7 +253,7 @@ fn ui_example_system(
         });
 }
 
-fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, fps:f64) {
+fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, fps: f64) {
     terminal
         .draw(|frame| {
             let area = frame.size();
@@ -281,16 +276,13 @@ fn draw_info_menu(terminal: &mut Terminal<RataguiBackend>, masterok: &Masterik, 
                 Line::from(" "),
                 Line::from("Increase / Decrease"),
                 Line::from(" "),
-         
                 Line::from(format!("[T/G] Galaxy Angle Mod: {} ", masterok.angle_mod)),
                 Line::from(format!("[Y/H] Galaxy Radius Mod: {} ", masterok.radius_mod)),
-                Line::from(format!("[U/J] Galaxy Distance Mod: {} ", masterok.distance_mod)),
+                Line::from(format!(
+                    "[U/J] Galaxy Distance Mod: {} ",
+                    masterok.distance_mod
+                )),
                 Line::from(" "),
-
-
-
-
-
                 Line::from("Toggle Star Types in Galaxy"),
                 Line::from(" "),
                 Line::from("[Z] - O-Class (Blue Giant)").style(if masterok.o_class {
@@ -347,12 +339,12 @@ fn generate_star_positions_in_range(
     star_data: &StarData,
 ) {
     for boop in start..end {
-        let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod*2.0));
-       
-        let mut angle = (boop as f32 ) * (0.0002 + random_angle) ;
-    
-        let random_radius: f32 = masterok.rng.gen_range(2.0..(masterok.radius_mod*2.0));
-        let radius = (masterok.radius_mod+ random_radius) * angle;
+        let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod * 2.0));
+
+        let mut angle = (boop as f32) * (0.0002 + random_angle);
+
+        let random_radius: f32 = masterok.rng.gen_range(2.0..(masterok.radius_mod * 2.0));
+        let radius = (masterok.radius_mod + random_radius) * angle;
         let mut xik = radius * angle.cos() * masterok.distance_mod;
         let mut yik = radius * angle.sin() * masterok.distance_mod;
 
@@ -379,9 +371,7 @@ fn generate_star_positions_in_range(
             70.0
         };
 
-       
-
-      //  spawning_radius += random_radius as f32;
+        //  spawning_radius += random_radius as f32;
 
         let rand_range = 5000.0 as f32;
 
@@ -391,11 +381,10 @@ fn generate_star_positions_in_range(
         xik += random_offset_x;
         yik += random_offset_y;
 
-        if (boop % 2 == 0) && masterok.spiral_arm_count>1 {
+        if (boop % 2 == 0) && masterok.spiral_arm_count > 1 {
             xik = -xik;
             yik = -yik;
         }
-       
 
         // Ensure the new circle does not overlap with any existing circles
         let mut attempts = 0;
@@ -425,16 +414,11 @@ fn spawn_initial_stars(
     mut masterok: ResMut<Masterik>,
     star_data: Res<StarData>,
     mut ev_respawn: EventReader<RespawnStars>,
- //  mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
+    //  mut query_camera: Query<(&mut OrthographicProjection, &mut Transform), With<Camera>>,
 ) {
     for resp in ev_respawn.read() {
-
-      //  let (mut projection, mut transform) = query_camera.single_mut();
-     //   transform.rotate_local_z(masterok.initial_angle);
-
-
-
-
+        //  let (mut projection, mut transform) = query_camera.single_mut();
+        //   transform.rotate_local_z(masterok.initial_angle);
 
         generate_star_positions_in_range(
             1,
@@ -487,8 +471,6 @@ fn spawn_initial_stars(
             let mut random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
             let mut random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
 
-            
-
             let star_color = if radius > 500.0 {
                 Color::rgb_u8(159, 162, 222)
             } else if radius > 200.0 {
@@ -538,6 +520,7 @@ fn spawn_initial_stars(
                 ));
             }
         }
+        masterok.block_input = false;
     }
 }
 
@@ -660,4 +643,3 @@ fn despawn_all_stars(
         ev_respawn.send(RespawnStars);
     }
 }
-
