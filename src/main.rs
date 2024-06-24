@@ -70,8 +70,8 @@ fn main() {
 fn setup(mut commands: Commands, mut ev_respawn: EventWriter<RespawnStars>,server: Res<AssetServer>, mut masterok: ResMut<Masterik>, ) {
 
     let bloom_set = BloomSettings {
-        intensity: 0.75,
-        low_frequency_boost: 0.7,
+        intensity: 0.95,
+        low_frequency_boost: 0.9,
         low_frequency_boost_curvature: 0.95,
         high_pass_frequency: 1.0,
         prefilter_settings: BloomPrefilterSettings {
@@ -416,7 +416,7 @@ fn generate_star_positions_in_range(
 
         //  spawning_radius += random_radius as f32;
 
-        let rand_range = 5000.0 as f32;
+        let rand_range = 20000.0 as f32;
 
         let random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
         let random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
@@ -440,12 +440,7 @@ fn generate_star_positions_in_range(
             yik = -yik;
         }
 
-       /*
-        if (boop % 2 == 0) && masterok.spiral_arm_count > 1 {
-            xik = -xik;
-            yik = -yik;
-        }
-        */
+     
 
         // Ensure the new circle does not overlap with any existing circles
         let mut attempts = 0;
@@ -455,8 +450,8 @@ fn generate_star_positions_in_range(
             (((dx * dx) + (dy * dy)) as f64).sqrt() < (checking_radius + spawning_radius) as f64
         }) && attempts < 10
         {
-            xik += masterok.rng.gen_range(-5000.0..5000.0);
-            yik += masterok.rng.gen_range(-5000.0..5000.0);
+            xik += masterok.rng.gen_range(-50000.0..50000.0);
+            yik += masterok.rng.gen_range(-50000.0..50000.0);
             attempts += 1;
         }
 
@@ -501,16 +496,17 @@ fn spawn_initial_stars(
             initial_counter += 1;
 
             let radius = radius.clone();
+            let test_radius = radius +10.0;
 
-            let star_color = if radius > 500.0 {
+            let star_color = if test_radius > star_data.b_class_radius {
                 Color::rgb_u8(159, 162, 222)
-            } else if radius > 200.0 {
+            } else if test_radius > star_data.a_class_radius {
                 Color::rgb_u8(240, 240, 254)
-            } else if radius > 140.0 {
+            } else if test_radius > star_data.f_class_radius {
                 Color::rgb_u8(248, 254, 252)
-            } else if radius > 99.0 {
+            } else if test_radius > star_data.g_class_radius {
                 Color::rgb_u8(247, 254, 144)
-            } else if radius > 45.0 {
+            } else if test_radius > star_data.k_class_radius {
                 Color::rgb_u8(254, 170, 52)
             } else {
                 Color::rgb_u8(254, 70, 70)
@@ -523,7 +519,7 @@ fn spawn_initial_stars(
                 transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
                 sprite: Sprite {
                     color: star_color, // 4. Put something bright in a dark environment to see the effect
-                    custom_size: Some(Vec2::splat(radius.clone() *2.0)),
+                    custom_size: Some(Vec2::splat(radius.clone() * 2.0)),
                     ..default()
                 },
                 ..default()
@@ -533,26 +529,29 @@ fn spawn_initial_stars(
             ));
         }
 
-        for randomczik in 1..10000 {
+        for randomczik in 1..30000 {
             // initial_counter += 1;
 
-            let spawning_radius: f32 = masterok.rng.gen_range(10.0..90.0);
-            let radius = spawning_radius.clone();
+            let spawning_radius: f32 = masterok.rng.gen_range(10.0..star_data.k_class_radius);
+            
 
-            let rand_range = randomczik as f32 * 30.0;
+            let rand_range = randomczik as f32 * 30.0  ;
 
             let mut random_offset_x: f32 = masterok.rng.gen_range(-rand_range..rand_range);
             let mut random_offset_y: f32 = masterok.rng.gen_range(-rand_range..rand_range);
 
-            let star_color = if radius > 500.0 {
+            let radius = spawning_radius.clone();
+            let test_radius = radius +10.0;
+
+            let star_color = if test_radius > star_data.b_class_radius {
                 Color::rgb_u8(159, 162, 222)
-            } else if radius > 200.0 {
+            } else if test_radius > star_data.a_class_radius {
                 Color::rgb_u8(240, 240, 254)
-            } else if radius > 140.0 {
+            } else if test_radius > star_data.f_class_radius {
                 Color::rgb_u8(248, 254, 252)
-            } else if radius > 99.0 {
+            } else if test_radius > star_data.g_class_radius {
                 Color::rgb_u8(247, 254, 144)
-            } else if radius > 45.0 {
+            } else if test_radius > star_data.k_class_radius {
                 Color::rgb_u8(254, 170, 52)
             } else {
                 Color::rgb_u8(254, 70, 70)
@@ -583,7 +582,7 @@ fn spawn_initial_stars(
                         transform: Transform::from_translation(Vec3::new(random_offset_x.clone(), random_offset_y.clone(), 0.)),
                         sprite: Sprite {
                             color: star_color, // 4. Put something bright in a dark environment to see the effect
-                            custom_size: Some(Vec2::splat(radius.clone() *2.0)),
+                            custom_size: Some(Vec2::splat(radius.clone() * 2.0)),
                             ..default()
                         },
                         ..default()
@@ -609,7 +608,8 @@ fn star_watcher(
 
         let potential_value = (masterok.total_stars + ev.0);
 
-        if (potential_value > 0) && (potential_value < 101000) {
+
+        if (potential_value > 0) && (potential_value < 301000) {
             masterok.total_stars += ev.0;
          
 
@@ -658,16 +658,17 @@ fn star_adder(
                 let (x, y, radius) = positions_clone.pop().unwrap_or((0.0, 0.0, 0.0));
 
                 let radius = radius.clone();
-
-                let star_color = if radius > 500.0 {
+                let test_radius = radius +10.0;
+    
+                let star_color = if test_radius > star_data.b_class_radius {
                     Color::rgb_u8(159, 162, 222)
-                } else if radius > 200.0 {
+                } else if test_radius > star_data.a_class_radius {
                     Color::rgb_u8(240, 240, 254)
-                } else if radius > 140.0 {
+                } else if test_radius > star_data.f_class_radius {
                     Color::rgb_u8(248, 254, 252)
-                } else if radius > 99.0 {
+                } else if test_radius > star_data.g_class_radius {
                     Color::rgb_u8(247, 254, 144)
-                } else if radius > 45.0 {
+                } else if test_radius > star_data.k_class_radius {
                     Color::rgb_u8(254, 170, 52)
                 } else {
                     Color::rgb_u8(254, 70, 70)
@@ -679,7 +680,7 @@ fn star_adder(
                         transform: Transform::from_translation(Vec3::new(x.clone(), y.clone(), 0.)),
                         sprite: Sprite {
                             color: star_color, // 4. Put something bright in a dark environment to see the effect
-                            custom_size: Some(Vec2::splat(radius.clone() *2.0)),
+                            custom_size: Some(Vec2::splat(radius.clone() * 2.0)),
                             ..default()
                         },
                         ..default()

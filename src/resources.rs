@@ -98,8 +98,8 @@ impl Default for Masterik {
             k_class: true,
             m_class: true,
             angle_mod: 0.0002,
-            radius_mod: 200.0,
-            distance_mod: 90.0,
+            radius_mod: 2000.0,
+            distance_mod: 100.0,
             block_input: false,
 
             positions: Vec::new(),
@@ -129,13 +129,13 @@ pub struct StarData {
 impl Default for StarData {
     fn default() -> Self {
         Self {
-            o_class_radius: 1600.0,
-            b_class_radius: 500.0,
-            a_class_radius: 200.0,
-            f_class_radius: 150.0,
-            g_class_radius: 100.0,
-            k_class_radius: 50.0,
-            m_class_radius: 10.0,
+            o_class_radius: 16000.0,
+            b_class_radius: 5000.0,
+            a_class_radius: 2000.0,
+            f_class_radius: 1500.0,
+            g_class_radius: 1000.0,
+            k_class_radius: 500.0,
+            m_class_radius: 100.0,
             o_class_rarity: 30,
             b_class_rarity: 2400,
             a_class_rarity: 9000,
