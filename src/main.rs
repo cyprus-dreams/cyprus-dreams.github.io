@@ -363,6 +363,9 @@ fn generate_star_positions_in_range(
         let random_angle: f32 = masterok.rng.gen_range(0.0..(masterok.angle_mod * 2.0));
 
         let mut angle = (boop as f32) * (0.0002 + random_angle);
+        if (boop % 3 == 0) && masterok.spiral_arm_count > 2 {
+            angle+=0.002
+        }
 
         let random_radius: f32 = masterok.rng.gen_range(2.0..(masterok.radius_mod * 2.0));
         let radius = (masterok.radius_mod + random_radius) * angle;
